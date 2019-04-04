@@ -1,0 +1,74 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    <appender name="COMMONERROR" class="ch.qos.logback.core.FileAppender">
+        <file>logs/common-error.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    <appender name="INTEGRATION" class="ch.qos.logback.core.FileAppender">
+        <file>logs/common-integration.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    <appender name="ORDER" class="ch.qos.logback.core.FileAppender">
+        <file>logs/common-biz.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    <appender name="SCHEDUE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/common-schedue.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    <appender name="SPRING" class="ch.qos.logback.core.FileAppender">
+        <file>logs/common-spring.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    <appender name="HIBERNATE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/common-db.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    
+    <logger name="ch.qos.logback" level="WARN"/>
+    <logger name="org.springframework"  level="INFO" additivity="false">  
+	    <appender-ref ref="SPRING"/>  
+	</logger>
+    <logger name="com.yumu.hexie"  level="WARN" additivity="false">  
+	    <appender-ref ref="COMMONERROR"/>  
+	</logger>
+    <logger name="com.yumu.hexie.integration"  level="INFO" additivity="false">  
+	    <appender-ref ref="INTEGRATION"/>  
+	</logger>
+    <logger name="org.hibernate"  level="DEBUG" additivity="false">  
+	    <appender-ref ref="HIBERNATE"/>  
+	</logger>
+    <logger name="com.yumu.hexie.service.impl.BaseOrderServiceImpl"  level="INFO" additivity="false">  
+	    <appender-ref ref="ORDER"/>  
+	</logger>
+    <logger name="com.yumu.hexie.schedule"  level="INFO" additivity="false">  
+	    <appender-ref ref="SCHEDUE"/>  
+	</logger>
+    <root level="WARN">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="COMMONERROR"/>
+    </root>
+</configuration>
