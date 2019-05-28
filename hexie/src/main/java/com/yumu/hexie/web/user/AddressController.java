@@ -2,10 +2,8 @@ package com.yumu.hexie.web.user;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,13 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.yumu.hexie.common.Constants;
-import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.model.distribution.region.AmapAddress;
 import com.yumu.hexie.model.distribution.region.Region;
 import com.yumu.hexie.model.user.Address;
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.model.user.Xiaoqu;
 import com.yumu.hexie.service.user.AddressService;
 import com.yumu.hexie.service.user.PointService;
 import com.yumu.hexie.service.user.UserService;
@@ -38,6 +35,23 @@ public class AddressController extends BaseController{
 	@Inject
 	private PointService pointService;
 
+	@RequestMapping(value = "/saveAddressWithXiaoqu", method = RequestMethod.POST)
+    @ResponseBody
+    public BaseResult<Address> saveWithXiaoqu(HttpSession session,@ModelAttribute(Constants.USER)User user,@RequestBody AddressReq req) throws Exception {
+        Address address = addressService.saveAddress(req, user);
+        pointService.addZhima(user, 50, "zhima-address-"+user.getId()+"-"+address.getId());
+        if(user.getCurrentAddrId() == 0) {
+            session.setAttribute(Constants.USER, userService.getById(user.getId()));
+        }
+        return new BaseResult<Address>().success(address);
+    }
+	
+	@RequestMapping(value = "/queryXiaoqus", method = RequestMethod.POST)
+    @ResponseBody
+    public BaseResult<List<Xiaoqu>> queryXiaoqus(){
+        return new BaseResult<List<Xiaoqu>>().success(addressService.queryXiaoqu());
+    }
+	
 	@RequestMapping(value = "/address/delete/{addressId}", method = RequestMethod.POST)
 	@ResponseBody
     public BaseResult<String> deleteAddress(@ModelAttribute(Constants.USER)User user,@PathVariable long addressId) throws Exception {
@@ -69,27 +83,7 @@ public class AddressController extends BaseController{
 		BaseResult<List<Address>> r = BaseResult.successResult(addresses);
 		return r;
     }
-	@RequestMapping(value = "/addAddress", method = RequestMethod.POST)
-	@ResponseBody
-    public BaseResult<Address> save(HttpSession session,@ModelAttribute(Constants.USER)User user,@RequestBody AddressReq address) throws Exception {
-		if(address.getCountyId() == 0){
-			return new BaseResult<Address>().failMsg("请重新选择所在区域");
-		}
-		if(StringUtil.isEmpty(address.getXiaoquName()) || StringUtil.isEmpty(address.getDetailAddress())){
-			return new BaseResult<Address>().failMsg("请重新填写小区和详细地址");
-		}
-		if (StringUtil.isEmpty(address.getReceiveName()) || StringUtil.isEmpty(address.getTel())) {
-			return new BaseResult<Address>().failMsg("请检查真实姓名和手机号码是否正确");
-		}
-		address.setUserId(user.getId());
-		Address addr = addressService.addAddress(address);
-		//本方法内调用无法异步
-		addressService.fillAmapInfo(addr);
-		user = userService.getById(user.getId());
-		pointService.addZhima(user, 50, "zhima-address-"+user.getId()+"-"+address.getId());
-		session.setAttribute(Constants.USER, user);
-		return new BaseResult<Address>().success(addr);
-    }
+
     @RequestMapping(value = "/regions/{type}/{parentId}", method = RequestMethod.GET)
     @ResponseBody
     public BaseResult<List<Region>> queryRegions(@PathVariable int type,@PathVariable long parentId){

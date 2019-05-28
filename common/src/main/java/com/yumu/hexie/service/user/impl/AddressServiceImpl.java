@@ -7,10 +7,10 @@ import javax.inject.Inject;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
 import com.yumu.hexie.common.util.JacksonJsonUtil;
 import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.integration.amap.AmapUtil;
@@ -23,6 +23,9 @@ import com.yumu.hexie.model.distribution.region.RegionRepository;
 import com.yumu.hexie.model.user.Address;
 import com.yumu.hexie.model.user.AddressRepository;
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.model.user.UserRepository;
+import com.yumu.hexie.model.user.Xiaoqu;
+import com.yumu.hexie.model.user.XiaoquRepository;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.user.AddressService;
 import com.yumu.hexie.service.user.UserService;
@@ -34,57 +37,46 @@ public class AddressServiceImpl implements AddressService {
     private static final Logger log = LoggerFactory.getLogger(AddressServiceImpl.class);
     
     @Inject
-    private UserService userService;
+	private UserService userService;
     @Inject
     private AddressRepository addressRepository;
     @Inject
     private AmapAddressRepository amapAddressRepository;
+	@Inject
+	private RegionRepository regionRepository;
     @Inject
-    private RegionRepository regionRepository;
+    private XiaoquRepository xiaoquRepository;
+    @Inject
+    private UserRepository userRepository;
     
     @Override
-    public Address addAddress(AddressReq addressReq) {
-        log.error("添加地址");
-        Region xiaoqu;
-        Address address = addressReq.getId() == null ||  addressReq.getId()==0 
-                ? new Address() : addressRepository.findOne(addressReq.getId());
-        if(StringUtil.isNotEmpty(addressReq.getXiaoquName())) {
-            List<Region> xiaoqus = regionRepository.findAllByParentIdAndName(addressReq.getCountyId(),addressReq.getXiaoquName());
-            //FIXME 以小区名为准而非小区ID
-            if(xiaoqus == null||xiaoqus.size()== 0 ){
-                Region county = regionRepository.findOne(addressReq.getCountyId());
-                xiaoqu = new Region(county.getId(), county.getName(), addressReq.getXiaoquName());
-                xiaoqu.setLatitude(0d);
-                xiaoqu.setLongitude(0d);
-                xiaoqu = regionRepository.save(xiaoqu);
-            } else {
-                xiaoqu = xiaoqus.get(xiaoqus.size() - 1);
-            }
-            BeanUtils.copyProperties(addressReq, address);
-            address.setXiaoquId(xiaoqu.getId());
-            Region county = regionRepository.findOne(address.getCountyId());
-            Region city = regionRepository.findOne(county.getParentId());
-            Region province = regionRepository.findOne(city.getParentId());
-            address.setCountyId(county.getId());
-            address.setCounty(county.getName());
-            address.setCity(city.getName());
-            address.setCityId(city.getId());
-            address.setProvince(province.getName());
-            address.setProvinceId(province.getId());
-            address = addressRepository.save(address);
+	public Address addAddress(Address address) {
+		Region xiaoqu;
+		if(StringUtil.isNotEmpty(address.getXiaoquName())) {
+			List<Region> xiaoqus = regionRepository.findAllByParentIdAndName(address.getCountyId(),address.getXiaoquName());
+			if(xiaoqus == null||xiaoqus.size()== 0 ){
+				xiaoqu = new Region(address.getCountyId(), address.getCounty(), address.getXiaoquName());
+				xiaoqu.setLatitude(address.getLatitude());
+				xiaoqu.setLongitude(address.getLongitude());
+				xiaoqu = regionRepository.save(xiaoqu);
+			} else {
+				xiaoqu = xiaoqus.get(xiaoqus.size() - 1);
+			}
+			address.setXiaoquId(xiaoqu.getId());
+
+	        address = addressRepository.save(address);
 
             List<Address> addrs = addressRepository.findAllByUserId(address.getUserId());
             if(getDefaultAddr(addrs) == null) {
-                address.setMain(true);
-                User user = userService.getById(address.getUserId());
+                User user = userRepository.findOne(address.getId());
                 configDefaultAddress(user, address.getId());
             }
-        } else {
-            throw new BizValidateException("地址所在小区信息未填写！");
-        }
+		} else {
+			throw new BizValidateException("地址所在小区信息未填写！");
+		}
 
-        return address;
-    }
+		return address;
+	}
     
     private Address getDefaultAddr(List<Address> addrs) {
         if(addrs == null) {
@@ -241,5 +233,35 @@ public class AddressServiceImpl implements AddressService {
             }
             return null;
         }
+    }
+
+    @Override
+    public Address saveAddress(AddressReq addr,User user) {
+        Xiaoqu xiaoqu = xiaoquRepository.findOne(addr.getXiaoquId());
+        Address address ;
+        if(addr.getAddrId() !=null && addr.getAddrId()!=0) {
+            address = addressRepository.findOne(addr.getAddrId());
+        } else {
+            address = new Address();
+        }
+        address.initXiaoqu(xiaoqu);
+        address.setUserId(user.getId());
+        address.setUserName(user.getRealName());
+        address.setReceiveName(addr.getName());
+        address.setTel(addr.getTel());
+        address.setDetailAddress(addr.getDetailAddr());
+        address = addressRepository.save(address);
+        
+        List<Address> addrs = addressRepository.findAllByUserId(address.getUserId());
+        if(getDefaultAddr(addrs) == null) {
+            User nuser = userRepository.findOne(user.getId());
+            configDefaultAddress(nuser, address.getId());
+        }
+        return address;
+    }
+
+    @Override
+    public List<Xiaoqu> queryXiaoqu() {
+        return xiaoquRepository.findAll(new Sort(Direction.ASC, "sort"));
     }
 }
