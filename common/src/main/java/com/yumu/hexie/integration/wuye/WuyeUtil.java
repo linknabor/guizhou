@@ -160,11 +160,11 @@ public class WuyeUtil {
 	public static BaseResult<CellListVO> getVagueSectByName(String sect_name) {
 		//中文打码
 		String sectName = sect_name;
-//		try {
-//			sectName = URLEncoder.encode(sect_name, "GBK");
-//		} catch (Exception e) {
-//			sectName = sect_name;
-//		}
+		try {
+			sectName = URLEncoder.encode(sect_name, "GBK");
+		} catch (Exception e) {
+			sectName = sect_name;
+		}
 		String url = REQUEST_ADDRESS + String.format(SECT_VAGUE_LIST_URL, sectName);
 		return (BaseResult<CellListVO>)httpGet(url,CellListVO.class);
 	}
