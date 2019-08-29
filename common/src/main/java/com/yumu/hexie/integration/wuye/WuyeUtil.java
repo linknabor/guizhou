@@ -140,7 +140,7 @@ public class WuyeUtil {
 		if (!baseResult.isSuccess()) {
 			throw new ValidationException(baseResult.getData().toString());
 		}
-		return (BaseResult<WechatPayInfo>)httpGet(url,WechatPayInfo.class);
+		return (BaseResult<WechatPayInfo>)baseResult;
 	}
 	
 	// 11.通知已支付
