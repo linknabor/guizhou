@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
     public User getById(long uId){
         return userRepository.findOne(uId);
     }
-    public User getByOpenId(String openId){
+    public List<User> getByOpenId(String openId){
         return userRepository.findByOpenid(openId);
     }
 	@Override
@@ -44,7 +44,15 @@ public class UserServiceImpl implements UserService {
             throw new BizValidateException("微信信息不正确");
         }
 		String openId = user.getOpenid();
-		User userAccount = userRepository.findByOpenid(openId);
+		List<User> userList = userRepository.findByOpenid(openId);
+		User userAccount = null;
+		if (userList!=null && userList.size()> 0) {
+			if (userList.size() == 1) {
+				userAccount = userList.get(0);
+			}else {
+				userAccount = userList.get(userList.size()-1);
+			}
+		}
 		if(userAccount == null) {
             userAccount = createUser(user);
             userAccount.setNewRegiste(true);

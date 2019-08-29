@@ -91,11 +91,11 @@ public class WechatCoreServiceImpl implements WechatCoreService {
 					LOGGER.error("用户关注！");
 					// userService.getOrSubscibeUserByOpenId();
 
-					User userAccount = userService.getByOpenId(requestMap.getFromUserName());
-					if(userAccount == null) {
-						User u = userService.getByOpenId(requestMap.getFromUserName());
-						couponService.addCoupon4Subscribe(u);
-					}
+//					User userAccount = userService.getByOpenId(requestMap.getFromUserName());
+//					if(userAccount == null) {
+//						User u = userService.getByOpenId(requestMap.getFromUserName());
+//						couponService.addCoupon4Subscribe(u);
+//					}
 					break;
 				case ConstantWeChat.EVENT_TYPE_UNSUBSCRIBE:// 取消关注,用户接受不到我们发送的消息了，可以在这里记录用户取消关注的日志信息
 					LOGGER.error("用户取消关注！");
