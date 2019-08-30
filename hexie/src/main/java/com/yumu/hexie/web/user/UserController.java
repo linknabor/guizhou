@@ -76,6 +76,8 @@ public class UserController extends BaseController{
 	@ResponseBody
     public BaseResult<UserInfo> userInfo(HttpSession session,@ModelAttribute(Constants.USER)User user) throws Exception {
 		
+		log.info("sessionUser is : " + user);
+		
 		User sessionUser = user;	//先拷贝一个副本，因为user很可能跟数据库中的user不是同一个。
 		List<User> userList = userService.getByOpenId(user.getOpenid());	//根据openid去查,可能会有多条。但只有id相同的视为真实的登陆用户
 		if (userList!=null) {
@@ -87,10 +89,10 @@ public class UserController extends BaseController{
 			}
 		}
 		user = userService.getById(user.getId());
+		
+		log.info("user in database : " + user);
+		
         if(user != null){
-        	if (StringUtil.isEmpty(user.getOpenid())) {
-    			return new BaseResult<UserInfo>().failCode(BaseResult.NEED_MAIN_LOGIN); 
-			}
         	session.setAttribute(Constants.USER, user);
         	UserInfo userinfo = new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId()));
             return new BaseResult<UserInfo>().success(userinfo);
