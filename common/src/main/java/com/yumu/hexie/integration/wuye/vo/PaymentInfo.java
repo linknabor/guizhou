@@ -17,6 +17,7 @@ public class PaymentInfo implements Serializable {
 	private String paymethod;
 	private String mianBill;
 	private String mianAmt;
+	private String show_invoice;//是否开票
 	private List<PaymentData> fee_data;
 	@Transient
 	public String getPaymethodStr(){
@@ -63,6 +64,12 @@ public class PaymentInfo implements Serializable {
 	}
 	public void setFee_data(List<PaymentData> fee_data) {
 		this.fee_data = fee_data;
+	}
+	public String getShow_invoice() {
+		return show_invoice;
+	}
+	public void setShow_invoice(String show_invoice) {
+		this.show_invoice = show_invoice;
 	}
 	
 
