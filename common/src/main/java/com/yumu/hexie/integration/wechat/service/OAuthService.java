@@ -3,9 +3,6 @@ package com.yumu.hexie.integration.wechat.service;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
 import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.AccessTokenOAuth;
 import com.yumu.hexie.integration.wechat.entity.common.WechatResponse;
@@ -109,41 +106,6 @@ public class OAuthService {
 			}
 		}
 		return user;
-	}
-	
-	/**
-	 * 获取 主公众号（承担支付通道的主公众号） 授权TOKEN
-	 * @param code
-	 * @return
-	 */
-	public static AccessTokenOAuth getBindOAuthAccessToken(String code) {
-		
-		String appId = ConstantWeChat.BIND_APPID;
-		String secret = ConstantWeChat.BIND_APPSECRET;
-		
-		log.error("bindAppId: " + appId);
-		log.error("bindAppSecret: " + secret);
-		
-		String url = GET_ACCESS_TOKEN_OAUTH
-				.replace("APPID", ConstantWeChat.BIND_APPID)
-				.replace("SECRET", ConstantWeChat.BIND_APPSECRET)
-				.replace("CODE", code);
-		
-		log.error("url: " + url);
-
-		WechatResponse jsonObject = WeixinUtil.httpsRequest(url, "POST", null, null);
-
-		AccessTokenOAuth accessTokenOAuth = null;
-
-		if (null != jsonObject&&jsonObject.getErrcode() == 0) {
-			accessTokenOAuth = new AccessTokenOAuth();
-			accessTokenOAuth.setAccessToken(jsonObject.getAccess_token());
-			accessTokenOAuth.setExpiresIn(jsonObject.getExpires_in());
-			accessTokenOAuth.setRefreshToken(jsonObject.getRefresh_token());
-			accessTokenOAuth.setOpenid(jsonObject.getOpenid());
-			accessTokenOAuth.setScope(jsonObject.getScope());
-		}
-		return accessTokenOAuth;
 	}
 	
 }

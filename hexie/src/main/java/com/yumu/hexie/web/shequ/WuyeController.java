@@ -395,12 +395,12 @@ public class WuyeController extends BaseController {
 	@Async
 	private void sendMsg(User user) {
 		String msg = "您好，欢迎加入合协社区。您已获得价值10元红包一份。感谢您对合协社区的支持。";
-		smsService.sendMsg(user, user.getTel(), msg, 11, 3);
+		smsService.sendMsg(user.getId(), user.getTel(), msg, 11, 3);
 	}
 
 	@Async
 	private void sendRegTemplateMsg(User user) {
-		TemplateMsgService.sendRegisterSuccessMsg(user, systemConfigService.queryWXAToken(user.getAppId()));
+		TemplateMsgService.sendRegisterSuccessMsg(user, systemConfigService.queryWXAToken());
 	}
 
 	/**
@@ -514,7 +514,7 @@ public class WuyeController extends BaseController {
 	@Async
 	private void sendPayTemplateMsg(User user, String tradeWaterId, String feePrice) {
 
-		TemplateMsgService.sendWuYePaySuccessMsg(user, tradeWaterId, feePrice, systemConfigService.queryWXAToken(user.getAppId()));
+		TemplateMsgService.sendWuYePaySuccessMsg(user, tradeWaterId, feePrice, systemConfigService.queryWXAToken());
 	}
 
 	@RequestMapping(value = "/applyInvoice", method = RequestMethod.POST)

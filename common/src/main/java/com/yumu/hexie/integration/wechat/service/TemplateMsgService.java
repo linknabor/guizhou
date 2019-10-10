@@ -7,7 +7,6 @@ import java.util.Date;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.yumu.hexie.common.util.AppUtil;
@@ -43,8 +42,8 @@ public class TemplateMsgService {
 	public static String REG_SUCCESS_MSG_TEMPLATE = ConfigUtil.get("registerSuccessTemplate");
 	public static String WUYE_PAY_SUCCESS_MSG_TEMPLATE = ConfigUtil.get("wuyePaySuccessTemplate");
 	public static String REPAIR_ASSIGN_TEMPLATE = ConfigUtil.get("reapirAssginTemplate");
-	
 	public static String YUYUE_ASSIGN_TEMPLATE = ConfigUtil.get("yuyueNoticeTemplate");
+	public static String COMPLAIN_TEMPLATE = ConfigUtil.get("complainTemplate");
 	
 	/**
 	 * 模板消息发送
@@ -184,6 +183,47 @@ public class TemplateMsgService {
         msg.setTouser(openId);
         TemplateMsgService.sendMsg(msg, accessToken);
         
+    }
+    
+    public static void sendHaoJiaAnAssignMsg(HaoJiaAnOrder hOrder, User user, String accessToken,String openId) {
+    	HaoJiaAnOrderVO vo = new HaoJiaAnOrderVO();
+    	vo.setTitle(new TemplateItem("有新的预约服务"));
+    	vo.setAppointmentDate(new TemplateItem(hOrder.getExpectedTime()));
+    	vo.setAppointmentContent(new TemplateItem(hOrder.getServiceTypeName()));
+    	vo.setAddress(new TemplateItem("预约地址：" + hOrder.getStrWorkAddr()+" "+hOrder.getStrName()+" "+(hOrder.getStrMobile()==null?"":hOrder.getStrMobile()+"\r\n"
+    			+"备注:"+(hOrder.getMemo()==null?"":hOrder.getMemo()))));
+    	log.error("预约服务的userId="+user.getId()+"");
+    	log.error("预约服务的user="+user+""); 	
+    	
+    	TemplateMsg<HaoJiaAnOrderVO> msg = new TemplateMsg<HaoJiaAnOrderVO>();
+    	msg.setData(vo);
+    	msg.setTemplate_id(YUYUE_ASSIGN_TEMPLATE);
+    	String url = GotongServiceImpl.YUYUE_NOTICE + hOrder.getyOrderId();
+    	url = AppUtil.addAppOnUrl(url, user.getAppId());
+    	msg.setUrl(url);
+    	msg.setTouser(openId);
+    	TemplateMsgService.sendMsg(msg, accessToken);
+    }
+    
+  //投诉模板，发送给商家
+    public static void sendHaoJiaAnCommentMsg(HaoJiaAnComment comment, User user, String accessToken,String openId) {
+    	log.error("sendHaoJiaAnCommentMsg的用户电话="+comment.getCommentUserTel());
+    	HaoJiaAnCommentVO vo = new HaoJiaAnCommentVO();
+    	vo.setTitle(new TemplateItem("用户投诉"));//标题
+    	vo.setUserName(new TemplateItem(comment.getCommentUserName()));//用户姓名
+    	vo.setUserTel(new TemplateItem(comment.getCommentUserTel()));//用户电话
+    	vo.setReason(new TemplateItem(comment.getCommentContent()));//投诉事由
+    	vo.setOrderNo(new TemplateItem(comment.getYuyueOrderNo()));;//订单编号
+    	vo.setMemo(new TemplateItem("用户对您的服务有投诉，请尽快联系用户处理。"));//备注（固定内容）
+    	log.error("投诉的userId="+user.getId()+"");
+    	log.error("投诉的user="+user+""); 
+    	TemplateMsg<HaoJiaAnCommentVO> msg = new TemplateMsg<HaoJiaAnCommentVO>();
+    	msg.setData(vo);
+    	msg.setTemplate_id(COMPLAIN_TEMPLATE);
+    	msg.setUrl(GotongServiceImpl.COMPLAIN_DETAIL + comment.getId());
+    	msg.setTouser(openId);
+    	
+    	TemplateMsgService.sendMsg(msg, accessToken);
     }
 
 }

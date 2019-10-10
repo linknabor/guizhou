@@ -33,14 +33,11 @@ import com.yumu.hexie.integration.wechat.entity.user.UserWeiXin;
 import com.yumu.hexie.model.localservice.HomeServiceConstant;
 import com.yumu.hexie.model.promotion.coupon.Coupon;
 import com.yumu.hexie.model.user.User;
-import com.yumu.hexie.model.view.BottomIcon;
-import com.yumu.hexie.model.view.QrCode;
 import com.yumu.hexie.service.common.GotongService;
 import com.yumu.hexie.service.common.SmsService;
 import com.yumu.hexie.service.common.SystemConfigService;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.o2o.OperatorService;
-import com.yumu.hexie.service.page.PageConfigService;
 import com.yumu.hexie.service.shequ.ParamService;
 import com.yumu.hexie.service.shequ.WuyeService;
 import com.yumu.hexie.service.user.CouponService;
@@ -76,8 +73,6 @@ public class UserController extends BaseController{
     private SystemConfigService systemConfigService;
     @Autowired
     private ParamService paramService;
-    @Autowired
-    private PageConfigService pageConfigService;
     
 
     @Value(value = "${testMode}")
@@ -123,12 +118,6 @@ public class UserController extends BaseController{
 			    UserInfo userInfo = new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId()));
 			    Map<String, String> paramMap = paramService.getParamByUser(user);
 			    userInfo.setCfgParam(paramMap);
-			    
-			    List<BottomIcon> iconList = pageConfigService.getBottomIcon(user.getAppId());
-			    userInfo.setIconList(iconList);
-			    QrCode qrCode = pageConfigService.getQrCode(user.getAppId());
-			    userInfo.setQrCode(qrCode.getQrLink());
-			    
 			    return new BaseResult<UserInfo>().success(userInfo);
 			} else {
 				log.error("current user id in session is not the same with the id in database. user : " + sessionUser + ", sessionId: " + session.getId());
@@ -175,8 +164,6 @@ public class UserController extends BaseController{
 		
 		User userAccount = null;
 		try {
-			String oriApp = postData.get("oriApp");
-	    	log.info("oriApp : " + oriApp);	//来源系统，如果为空，则说明来自于合协社区
 	    	
 			if (StringUtil.isNotEmpty(code)) {
 			    if(Boolean.TRUE.equals(testMode)) {
@@ -186,20 +173,14 @@ public class UserController extends BaseController{
 			        }catch(Throwable t){}
 			    }
 			    if(userAccount == null) {
-			    	
-			    	if (StringUtils.isEmpty(oriApp)) {
-			    		userAccount = userService.getOrSubscibeUserByCode(code);
-					}else {
-						userAccount = userService.getTpSubscibeUserByCode(code, oriApp);
-					}
-			       
+		    		userAccount = userService.getOrSubscibeUserByCode(code);
 			    }
 			    
 				pointService.addZhima(userAccount, 5, "zm-login-"+DateUtil.dtFormat(new Date(),"yyyy-MM-dd")+userAccount.getId());
 				wuyeService.userLogin(userAccount.getOpenid());
 				
 				/*判断用户是否关注公众号*/
-				UserWeiXin u = userService.getOrSubscibeUserByOpenId(oriApp, userAccount.getOpenid());
+				UserWeiXin u = userService.getOrSubscibeUserByOpenId(userAccount.getOpenid());
 				
 				updateWeUserInfo(userAccount, u);
 				session.setAttribute(Constants.USER, userAccount);
@@ -267,7 +248,7 @@ public class UserController extends BaseController{
 	@RequestMapping(value = "/getyzm", method = RequestMethod.POST)
 	@ResponseBody
     public BaseResult<String> getYzm(@RequestBody MobileYzm yzm, @ModelAttribute(Constants.USER)User user) throws Exception {
-		boolean result = smsService.sendVerificationCode(user, yzm.getMobile());
+		boolean result = smsService.sendVerificationCode(user.getId(), yzm.getMobile());
 		if(result) {
 		    return new BaseResult<String>().failMsg("发送验证码失败");
 		}
@@ -277,7 +258,7 @@ public class UserController extends BaseController{
 	@RequestMapping(value = "/getyzm1", method = RequestMethod.POST)
 	@ResponseBody
     public BaseResult<String> getYzm1(@RequestBody MobileYzm yzm) throws Exception {
-		boolean result = smsService.sendVerificationCode(new User(), yzm.getMobile());
+		boolean result = smsService.sendVerificationCode(12345, yzm.getMobile());
 		if(!result) {
 		    return new BaseResult<String>().failMsg("发送验证码失败");
 		}
@@ -363,37 +344,5 @@ public class UserController extends BaseController{
    		
     	 
     }
-    /**
-     * 绑定主公众号的openid
-     * @param user
-     * @param code
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping(value = "/bindWechat/{code}", method = RequestMethod.POST)
-    @ResponseBody
-    public BaseResult<String> bindMain(@ModelAttribute(Constants.USER)User user, @PathVariable String code) throws Exception {
-    	
-    	User currUser = userService.getById(user.getId());
-    	if (currUser == null) {
-    		return new BaseResult<String>().failMsg("user does not exist !");
-		}
-    	if (StringUtil.isEmpty(currUser.getBindOpenId())) {
-    		String openId = "";
-        	if (StringUtil.isNotEmpty(code)) {
-        		try {
-    				openId = userService.getBindOrSubscibeUserOpenIdByCode(code);
-    				currUser.setBindOpenId(openId);
-    	        	currUser.setBindAppId(ConstantWeChat.BIND_APPID);
-    	        	userService.save(currUser);
-    			} catch (Exception e) {
-    				throw new BizValidateException("get bind openid failed ! ");
-    			}
-        	}
-        	
-		}
-    	
-    	return new BaseResult<String>().success("bind succeeded!");
-    	
-    }
+  
 }

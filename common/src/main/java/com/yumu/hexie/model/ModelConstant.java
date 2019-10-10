@@ -292,4 +292,12 @@ public class ModelConstant {
 
 	public static final int COLLOCATION_STATUS_AVAILABLE = 1;
 	public static final int COLLOCATION_STATUS_INVAILID = 2;
+	
+	//评论或者投诉
+	public static final int HAOJIAAN_COMMPENT_STATUS_COMMENT = 1;//评论
+	public static final int HAOJIAAN_COMMPENT_STATUS_COMPLAIN = 2;//投诉
+	
+	public static final String PARA_TYPE_CSP = "2";
+
 }		
+

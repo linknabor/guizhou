@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -14,7 +13,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.hibernate.bytecode.buildtime.spi.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.yumu.hexie.common.util.JacksonJsonUtil;
@@ -31,7 +29,6 @@ import com.yumu.hexie.integration.wuye.vo.InvoiceInfo;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
 import com.yumu.hexie.integration.wuye.vo.PaymentInfo;
 import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
-import com.yumu.hexie.model.user.User;
 
 public class WuyeUtil {
 	private static final Logger log = LoggerFactory.getLogger(WuyeUtil.class);
@@ -277,7 +274,7 @@ public class WuyeUtil {
 		String err_msg = null;
 		
 		try {
-			Log.error("REQ:" + reqUrl);
+			log.error("REQ:" + reqUrl);
 			resp = MyHttpClient.getStringFromResponse(MyHttpClient.execute(get),"GBK");
 
 			if(reqUrl.indexOf("wechatPayRequestSDO.do")>=0) {
@@ -301,12 +298,12 @@ public class WuyeUtil {
 				}
 			}
 			
-			Log.error("RESP:" + resp);
+			log.error("RESP:" + resp);
 			BaseResult v =jsonToBeanResult(resp, c);
 			return v;
 		} catch (Exception e) {
 			e.printStackTrace();
-			Log.error("err msg :" + e.getMessage());
+			log.error("err msg :" + e.getMessage());
 		}
 		BaseResult r= new BaseResult();
 		r.setResult("99");

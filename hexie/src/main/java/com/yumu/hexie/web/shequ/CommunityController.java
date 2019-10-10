@@ -387,8 +387,7 @@ public class CommunityController extends BaseController{
 			
 			PutExtra extra = new PutExtra();
 			File img = null;
-			User user = userService.getById(ret.getUserId());
-			String accessToken=systemConfigService.queryWXAToken(user.getAppId());
+			String accessToken=systemConfigService.queryWXAToken();
 			try {
 				for (int i = 0; i < uploadIdArr.length; i++) {
 					
@@ -936,8 +935,7 @@ public class CommunityController extends BaseController{
 			PutExtra extra = new PutExtra();
 			File img = null;
 			
-			User user = userService.getById(ret.getCommentUserId());
-			String accessToken = systemConfigService.queryWXAToken(user.getAppId());
+			String accessToken = systemConfigService.queryWXAToken();
 			
 			try {
 				for (int i = 0; i < uploadIdArr.length; i++) {

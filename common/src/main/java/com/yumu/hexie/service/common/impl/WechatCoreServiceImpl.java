@@ -4,11 +4,8 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.yumu.hexie.common.util.AppUtil;
-import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.AccessToken;
 import com.yumu.hexie.integration.wechat.entity.AccessTokenOAuth;
 import com.yumu.hexie.integration.wechat.entity.common.CloseOrderResp;
@@ -26,7 +23,6 @@ import com.yumu.hexie.integration.wechat.service.UserService;
 import com.yumu.hexie.integration.wechat.util.WeixinUtil;
 import com.yumu.hexie.model.payment.PaymentOrder;
 import com.yumu.hexie.model.payment.RefundOrder;
-import com.yumu.hexie.model.redis.RedisRepository;
 import com.yumu.hexie.service.common.SystemConfigService;
 import com.yumu.hexie.service.common.WechatCoreService;
 import com.yumu.hexie.service.exception.WechatException;
@@ -40,8 +36,6 @@ public class WechatCoreServiceImpl implements WechatCoreService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WechatCoreServiceImpl.class);
 	@Inject
 	private SystemConfigService systemConfigService;
-	@Autowired
-	private RedisRepository redisRepository;
 	
 	@Override
 	public JsSign getPrepareSign(String prepay_id) {
@@ -150,5 +144,6 @@ public class WechatCoreServiceImpl implements WechatCoreService {
 		}
 		return null;
 	}
+
 
 }

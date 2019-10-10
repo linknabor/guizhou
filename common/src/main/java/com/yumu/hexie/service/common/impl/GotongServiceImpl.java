@@ -13,10 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import com.yumu.hexie.common.util.ConfigUtil;
-import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.customer.Article;
 import com.yumu.hexie.integration.wechat.entity.customer.DataJsonVo;
@@ -175,7 +173,7 @@ public class GotongServiceImpl implements GotongService {
 			data.setKeyword4(new DataJsonVo(""));
 			data.setRemark(new DataJsonVo(""));
 			msg.setData(data);
-			String accessToken = systemConfigService.queryWXAToken(useropenId.get(i).getAppId());
+			String accessToken = systemConfigService.queryWXAToken();
 			CustomService.sendCustomerMessage(msg, accessToken);
 		}
 		
