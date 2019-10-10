@@ -22,18 +22,22 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.yumu.hexie.integration.wuye.resp.BaseResponse;
+import com.yumu.hexie.integration.wuye.resp.BaseResponseDTO;
 import com.yumu.hexie.service.exception.BizValidateException;
+import com.yumu.hexie.service.exception.IntegrationBizException;
 import com.yumu.hexie.web.BaseResult;
 import com.yumu.hexie.web.common.WechatController;
 
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler<T> {
     @Inject
     private MessageSource messageSource;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(WechatController.class);
 
-    @ExceptionHandler(value = Exception.class)
+    @SuppressWarnings("rawtypes")
+	@ExceptionHandler(value = Exception.class)
     @ResponseBody
     public BaseResult defaultErrorHandler(HttpServletRequest req, HttpServletResponse res, Exception e) throws Exception {
         if(e instanceof HttpSessionRequiredException) {
@@ -44,7 +48,6 @@ public class GlobalExceptionHandler {
     	if(e instanceof BizValidateException) {
     		return BaseResult.fail(e.getMessage());
     	}
-    	
         if (e instanceof HttpRequestMethodNotSupportedException)
             return BaseResult.fail(localizeErrorMessage("http.method.notsupport"));
         if (e instanceof TypeMismatchException)
@@ -52,7 +55,8 @@ public class GlobalExceptionHandler {
         return BaseResult.fail(localizeErrorMessage(StringUtils.isEmpty(e.getMessage()) ? "server.internal.error" : e.getMessage()));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @SuppressWarnings("rawtypes")
+	@ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
     public BaseResult handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
@@ -64,4 +68,16 @@ public class GlobalExceptionHandler {
         Locale locale = LocaleContextHolder.getLocale();
         return messageSource.getMessage(errorCode, null, locale);
     }
+    
+    @ExceptionHandler(value = IntegrationBizException.class)
+    @ResponseBody
+    public BaseResponseDTO<?> integrationExceptionHandler(HttpServletRequest request, HttpServletResponse response, IntegrationBizException e) {
+
+    	if (e instanceof IntegrationBizException) {
+			return BaseResponse.fail(e.getRequestId(), e.getMessage());
+		}
+    	return BaseResponse.fail("", e.getMessage());
+    }
+    
+    
 }

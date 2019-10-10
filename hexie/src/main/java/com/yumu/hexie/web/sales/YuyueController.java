@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Controller;
@@ -46,8 +48,10 @@ import com.yumu.hexie.model.tohome.AixiangbanOrderRepository;
 import com.yumu.hexie.model.tohome.BaojieOrder;
 import com.yumu.hexie.model.tohome.BaojieOrderRepository;
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.service.home.impl.HaoJiaAnServiceImpl;
 import com.yumu.hexie.web.BaseController;
 import com.yumu.hexie.web.BaseResult;
+import com.yumu.hexie.web.home.HaoJiaAnController;
 
 /**
  * <pre>
@@ -60,7 +64,7 @@ import com.yumu.hexie.web.BaseResult;
 @Deprecated//准备弃用该方法，后续实现本地服务使用其它类
 @Controller(value = "yuyueController")
 public class YuyueController extends BaseController{
-    
+	private static final Logger log = LoggerFactory.getLogger(YuyueController.class);
 
     @Inject
     private AyiServiceOrderRepository ayiServiceOrderRepository;
@@ -84,7 +88,8 @@ public class YuyueController extends BaseController{
     private BaojieOrderRepository baojieOrderRepository;
     @Inject
     private AixiangbanOrderRepository aixiangbanOrderRepository;
-
+    @Inject
+    private HaoJiaAnController haoJiaAnController;
     @Inject
     private YuyueOrderRepository yuyueOrderRepository;
     
@@ -118,12 +123,17 @@ public class YuyueController extends BaseController{
     @RequestMapping(value = "yuyueOrders/{orderId}", method = RequestMethod.GET )
     @ResponseBody
     public BaseResult<YuyueOrder> yuyueOrdersById (@ModelAttribute(Constants.USER)User user, @PathVariable long orderId) throws Exception {
-
+    	log.error("yuyueController的orderId="+orderId+"");
          YuyueOrder order = yuyueOrderRepository.findOne(orderId);
-        if(order.getUserId() != user.getId()){
-            return new BaseResult<YuyueOrder>().failMsg("你没有权限查看该预约单！");
-        }
-         return new BaseResult<YuyueOrder>().success(order);
+         log.error("order.getUserId()="+order.getUserId()+"");
+         log.error("user.getId()"+user.getId()+"");
+         List<Long> userIds = haoJiaAnController.orderAccessAuthority(user, orderId);
+         for (Long id : userIds) {
+			if(user.getId() == id) {
+				return new BaseResult<YuyueOrder>().success(order);
+			}
+		}
+         return new BaseResult<YuyueOrder>().failMsg("你没有权限查看该预约单！");
     }
     @RequestMapping(value = "yuyueOrders/{productType}/{orderId}", method = RequestMethod.GET )
     @ResponseBody

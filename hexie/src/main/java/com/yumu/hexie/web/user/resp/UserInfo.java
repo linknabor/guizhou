@@ -5,10 +5,16 @@
 package com.yumu.hexie.web.user.resp;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 import org.springframework.beans.BeanUtils;
 
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.model.view.BottomIcon;
 
 /**
  * <pre>
@@ -56,17 +62,35 @@ public class UserInfo implements Serializable {
     
     private String xiaoquName;
     private long id;
-    private String sect_id;
     private String officeTel;
+    
+    private String sectId;//小区id
+	private String cspId;//公司
+ 	private Map<?, ?> cfgParam = new HashMap<>();
+ 	private List<BottomIcon> iconList = new ArrayList<BottomIcon>();
+ 	
+ 	private String qrCode;
 
-    public String getOfficeTel() {
+ 	
+	public String getSectId() {
+		return sectId;
+	}
+	public void setSectId(String sectId) {
+		this.sectId = sectId;
+	}
+	public String getCspId() {
+		return cspId;
+	}
+	public void setCspId(String cspId) {
+		this.cspId = cspId;
+	}
+	public String getOfficeTel() {
 		return officeTel;
 	}
 	public void setOfficeTel(String officeTel) {
 		this.officeTel = officeTel;
 	}
-
-    public UserInfo(){}
+	public UserInfo(){}
     public UserInfo(User user){
         BeanUtils.copyProperties(user, this);
     }
@@ -248,11 +272,23 @@ public class UserInfo implements Serializable {
     public void setId(long id) {
         this.id = id;
     }
-	public String getSect_id() {
-		return sect_id;
+	public Map<?, ?> getCfgParam() {
+		return cfgParam;
 	}
-	public void setSect_id(String sect_id) {
-		this.sect_id = sect_id;
+	public void setCfgParam(Map<?, ?> cfgParam) {
+		this.cfgParam = cfgParam;
+	}
+	public List<BottomIcon> getIconList() {
+		return iconList;
+	}
+	public void setIconList(List<BottomIcon> iconList) {
+		this.iconList = iconList;
+	}
+	public String getQrCode() {
+		return qrCode;
+	}
+	public void setQrCode(String qrCode) {
+		this.qrCode = qrCode;
 	}
     
     
