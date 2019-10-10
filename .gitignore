@@ -11,3 +11,5 @@
 /hexiebk/.project
 /hexie/bin
 /.settings/org.eclipse.m2e.core.prefs
+/common/logs/*.log
+/hexie/logs/hexie/*.log
