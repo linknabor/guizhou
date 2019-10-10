@@ -3,8 +3,8 @@ package com.yumu.hexie.integration.wechat.service;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.AccessTokenOAuth;
@@ -17,8 +17,6 @@ import com.yumu.hexie.integration.wechat.util.WeixinUtil;
  */
 public class OAuthService {
 
-	private static final Logger log = LoggerFactory.getLogger(OAuthService.class);
-	
 	/**
 	 * wechat oauth url
 	 */
@@ -28,12 +26,11 @@ public class OAuthService {
 	 * 通过oauth获取用户详细信息
 	 */
 	public static String GET_USER_INFO_OAUTH = "https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN";
-
 	/**
 	 * 获取oauth网页认证的token
 	 */
 	public static String GET_ACCESS_TOKEN_OAUTH = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code";
-
+	
 	/**
 	 * 获得Oauth认证的URL
 	 * @param redirectUrl	跳转的url
@@ -57,9 +54,7 @@ public class OAuthService {
 	
 	/**
 	 * 获取Access_Token（oAuth认证,此access_token与基础支持的access_token不同）
-	 * 
-	 * @param code
-	 *            用户授权后得到的code
+	 * @param code 用户授权后得到的code
 	 * @return AccessTokenOAuth对象
 	 */
 	public static AccessTokenOAuth getOAuthAccessToken(String code) {

@@ -80,7 +80,7 @@ public class SettleServiceImpl implements SettleService {
     @Override
     public void confirmBiz(int orderType, long orderId) {
         SettleBill bill = findSettleBill(orderType, orderId);
-        //bill.setServiceFinishDate(new Date());//20160802 这一步操作是错的，不应该有，结算时会用到该字段
+        bill.setServiceFinishDate(new Date());
         bill.setStatus(SettleConstant.STATUS_CONFIRM);
         settleBillRepository.save(bill);
     }

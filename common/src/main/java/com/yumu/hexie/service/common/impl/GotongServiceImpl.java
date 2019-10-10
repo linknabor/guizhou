@@ -5,32 +5,33 @@
 package com.yumu.hexie.service.common.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.yumu.hexie.common.util.ConfigUtil;
+import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.customer.Article;
+import com.yumu.hexie.integration.wechat.entity.customer.DataJsonVo;
+import com.yumu.hexie.integration.wechat.entity.customer.DataVo;
 import com.yumu.hexie.integration.wechat.entity.customer.News;
 import com.yumu.hexie.integration.wechat.entity.customer.NewsMessage;
+import com.yumu.hexie.integration.wechat.entity.customer.Template;
 import com.yumu.hexie.integration.wechat.service.CustomService;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
-import com.yumu.hexie.model.community.ThreadOperator;
-import com.yumu.hexie.model.community.ThreadOperatorRepository;
 import com.yumu.hexie.model.localservice.ServiceOperator;
 import com.yumu.hexie.model.localservice.ServiceOperatorRepository;
 import com.yumu.hexie.model.localservice.bill.YunXiyiBill;
 import com.yumu.hexie.model.localservice.repair.RepairOrder;
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.model.user.UserRepository;
 import com.yumu.hexie.service.common.GotongService;
 import com.yumu.hexie.service.common.SystemConfigService;
 import com.yumu.hexie.service.o2o.OperatorService;
@@ -49,6 +50,10 @@ public class GotongServiceImpl implements GotongService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GotongServiceImpl.class);
     
+    public static String YUYUE_NOTICE = ConfigUtil.get("yuyueNotice");
+    
+    public static String COMPLAIN_DETAIL = ConfigUtil.get("complainDetail");
+    
     public static String WEIXIU_NOTICE = ConfigUtil.get("weixiuNotice");
 
     public static String XIYI_NOTICE = ConfigUtil.get("weixiuNotice");
@@ -59,22 +64,6 @@ public class GotongServiceImpl implements GotongService {
     
     public static String SUBSCRIBE_DETAIL = ConfigUtil.get("subscribeDetail");
     
-    public static String THREAD_NOTICE_URL = ConfigUtil.get("threadUrl");
-    
-    public static String THREAD_NOTICE_DESC = "业主姓名：NAME\r联系方式：TEL\r业主地址：CELL_ADDR\r消息类型：CATEGORY\r消息内容：CONTENT";
-    
-    public static Map<String, String>categoryMap;
-    
-    @PostConstruct   
-    public void init(){
-    	
-    	categoryMap = new HashMap<String, String>();
-    	categoryMap.put("0", "服务需求");
-    	categoryMap.put("1", "意见建议");
-    	categoryMap.put("2", "报修");
-    
-    }
-    
     @Inject
     private ServiceOperatorRepository  serviceOperatorRepository;
     @Inject
@@ -84,7 +73,7 @@ public class GotongServiceImpl implements GotongService {
     @Inject
     private SystemConfigService systemConfigService;
     @Inject
-    private ThreadOperatorRepository threadOperatorRepository;
+    private UserRepository userRepository;
 
     @Async
     @Override
@@ -115,8 +104,7 @@ public class GotongServiceImpl implements GotongService {
 	public void sendSubscribeMsg(User user) {
 
          Article article = new Article();
-         
-         article.setTitle("欢迎加入东湖e家园！");
+         article.setTitle("欢迎加入贵州幸福家园！");
          article.setDescription("您已获得关注红包，点击查看。");
          article.setPicurl(SUBSCRIBE_IMG);
          article.setUrl(SUBSCRIBE_DETAIL);
@@ -170,69 +158,26 @@ public class GotongServiceImpl implements GotongService {
         
     }
     
-    @Async
-	@Override
-	public void sendThreadPubNotify(User user, com.yumu.hexie.model.community.Thread thread) {
-
-    	LOG.error("发送管家帖子发布通知, threadId: ["+thread.getThreadId()+"]");
-    	 
-    	List<ThreadOperator> list = threadOperatorRepository.findAll();
-		for (ThreadOperator threadOperator : list) {
-			if ("3".equals(threadOperator.getRegionType())) {
-				if (!user.getSect_id().equals(threadOperator.getRegionSectId())) {
-					continue;
-				}
-			}
-			LOG.error("发送到操作员 id:" + threadOperator.getId() + ", name : " + threadOperator.getUserName());
+    @Override
+    public void pushweixinAll() {
+		List<User> useropenId = userRepository.findAll();
+		for (int i = 0; i < useropenId.size(); i++) {
 			
-			Article article = new Article();
-			article.setTitle("管家服务有新消息发布");
-			
-//			String name = user.getName();
-//			String tel = user.getTel();
-//			String cell_addr = user.getCell_addr();
-//			String category = thread.getThreadCategory();
-//			String content = thread.getThreadContent();
-//			
-//			LOG.error("name:"+name+",tel:"+tel+",cell_addr:"+cell_addr+"category:"+category+"content:"+content);
-//			LOG.error(String.valueOf(categoryMap.entrySet().size()));
-			
-			String desc = THREAD_NOTICE_DESC.replace("NAME", user.getName()).
-					replace("TEL", user.getTel()==null?"":user.getTel()).replace("CELL_ADDR", user.getCell_addr()).
-					replace("CATEGORY", categoryMap.get(thread.getThreadCategory())).
-					replace("CONTENT", thread.getThreadContent());
-			
-			article.setDescription(desc);
-			article.setUrl(THREAD_NOTICE_URL+thread.getThreadId());
-			
-			News news = new News(new ArrayList<Article>());
-			news.getArticles().add(article);
-			NewsMessage msg = new NewsMessage(news);
-			msg.setTouser(threadOperator.getOpenId());
-			msg.setMsgtype(ConstantWeChat.RESP_MESSAGE_TYPE_NEWS);
-			
-			String accessToken = systemConfigService.queryWXAToken();
+			Template msg = new Template();
+	    	msg.setTouser(useropenId.get(i).getOpenid());
+	    	msg.setUrl("");//跳转地址 threadid
+	    	msg.setTemplate_id("");//模板id template
+			DataVo data = new DataVo();
+			data.setFirst(new DataJsonVo(""));
+			data.setKeyword1(new DataJsonVo(""));
+			data.setKeyword2(new DataJsonVo(""));
+			data.setKeyword3(new DataJsonVo(""));
+			data.setKeyword4(new DataJsonVo(""));
+			data.setRemark(new DataJsonVo(""));
+			msg.setData(data);
+			String accessToken = systemConfigService.queryWXAToken(useropenId.get(i).getAppId());
 			CustomService.sendCustomerMessage(msg, accessToken);
 		}
-    	 
-    }
-    
-    public static void main(String[] args) {
-	
-    	Article article = new Article();
-		article.setTitle("管家服务有新消息");
-		article.setDescription("业主姓名：yiming\r联系方式：18116419486\r业主地址：浦东新区三林路128弄1单元103室\r类型:测试 \r阿朵司法所飞洒发放的说法as范德萨发送发放阿斯蒂芬撒法撒旦法撒 阿朵司法所飞洒发放的说法as范德萨发送发放阿斯蒂芬撒法撒旦法撒");
-		article.setUrl("https://www.e-shequ.com/dhzj3/weixin/communities/threadDetail.html?threadId=11");
 		
-		News news = new News(new ArrayList<Article>());
-		news.getArticles().add(article);
-		NewsMessage msg = new NewsMessage(news);
-		msg.setTouser("o_3DlwdnCLCz3AbTrZqj4HtKeQYY");
-		msg.setMsgtype(ConstantWeChat.RESP_MESSAGE_TYPE_NEWS);
-		
-		String accessToken = "ZunBWUlbDfqe2AN4rVMOST70fD_kEImeDWyEORcqmtEKo6TxWgkP6IWQWsIJPP4jrFVo0OYtlOSABpV1sLDsD9QE-O_fMQAFAErTpO-xONrzVS_vKchuKSN57AHhRwDUIDIhAIAOJO";
-		CustomService.sendCustomerMessage(msg, accessToken);
-    	
     }
-    
 }

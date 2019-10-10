@@ -1,6 +1,5 @@
 package com.yumu.hexie.integration.wechat.constant;
 
-import com.qiniu.api.config.Config;
 import com.yumu.hexie.common.util.ConfigUtil;
 
 /**

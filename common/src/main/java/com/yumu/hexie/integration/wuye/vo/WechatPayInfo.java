@@ -2,6 +2,8 @@ package com.yumu.hexie.integration.wuye.vo;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class WechatPayInfo implements Serializable {
 
 	private static final long serialVersionUID = 2567954737062142484L;
@@ -14,7 +16,8 @@ public class WechatPayInfo implements Serializable {
 	private String paysign;
 	private String user_pay_type;	//用户支付情况，0表示新用户首次支付，1表示老用户首次支付，2表示老用户非首次支付，返回值为空表示活动已结束
 	private String packageId;
-	private String token_id;
+	@JsonProperty("PAYURL")
+	private String payurl;
 	
 	public String getAppid() {
 		return appid;
@@ -74,11 +77,11 @@ public class WechatPayInfo implements Serializable {
 	public String getPackageId() {
 		return packageId;
 	}
-	public String getToken_id() {
-		return token_id;
+	public String getPayurl() {
+		return payurl;
 	}
-	public void setToken_id(String token_id) {
-		this.token_id = token_id;
+	public void setPayurl(String payurl) {
+		this.payurl = payurl;
 	}
 
 	

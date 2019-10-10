@@ -43,7 +43,8 @@ public class RepairSeed  extends BaseModel {
         this.repairOrderId = order.getId();
         this.repairType = order.getRepairType();
         this.projectId = order.getProjectId();
-        this.projectName = order.getProjectName();
+     //   this.projectName = order.getProjectName();
+        this.projectName = order.getMemo();//把项目内容替换为维修内容
         this.orderTime = DateUtil.dtFormat(order.getRequireDate(),"MM.dd HH:mm");
         this.time = DateUtil.dtFormat(new Date(order.getCreateDate()),"MM.dd HH:mm");
         this.orderDate = order.getCreateDate();

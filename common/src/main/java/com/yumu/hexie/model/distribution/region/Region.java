@@ -23,6 +23,10 @@ public class Region extends BaseModel{
 	@Column(nullable = true)
 	private Long amapId;
 	
+	private String xiaoquAddress; 
+	
+	private String sectId;
+	
     public Region(long parentId,String parentName,String name){
     	this.regionType = ModelConstant.REGION_XIAOQU;
     	this.parentId = parentId;
@@ -33,6 +37,18 @@ public class Region extends BaseModel{
 		
 	}
     
+	public String getSectId() {
+		return sectId;
+	}
+	public void setSectId(String sectId) {
+		this.sectId = sectId;
+	}
+	public String getXiaoquAddress() {
+		return xiaoquAddress;
+	}
+	public void setXiaoquAddress(String xiaoquAddress) {
+		this.xiaoquAddress = xiaoquAddress;
+	}
 	public String getName() {
 		return name;
 	}

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /** 
- * <p>项目：东湖e家园公众号</p>
+ * <p>项目：合协社区公众号</p>
  * <p>模块：爱相伴服务</p>
  * <p>描述：字段对应AixiangbanOrdre.java中的字段</p>
  * <p>版    权: Copyright (c) 2016</p>

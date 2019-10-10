@@ -77,7 +77,7 @@ public class CreateBlueUtil {
 				throw new BizValidateException("HTTP ERROR Status: " + method.getStatusCode() + ":" + method.getStatusText());
 			}
 			
-			log.error("response : " + response);
+			log.debug("response : " + response);
 			
 			/*
 			 *	返回串有2行，其中第一行由逗号分割，逗号后面的值为短信状态，0表正常，其他值都为异常。

@@ -65,20 +65,37 @@ public class User extends BaseModel{
 	private int zhima;
 	private int lvdou;
 	private Integer couponCount;
-	private String bindAppId;
-	private String bindOpenId;
 	
 	private String shareCode;
 	
 	private boolean newRegiste = true;
-	private long total_bind = 0;	//总共绑定房屋，初始为0
-	private String sect_id;//绑定小区ID 对应region_info表
-	private String sect_name;	//绑定房屋所在小区
-	private String cell_id;//绑定房屋的ID
-	private String cell_addr; 
 	private String officeTel;
 	
+	private String sectId;//小区id
+	private String cspId;//公司
 	
+	private String appId;
+	
+	private String oriSys;	//来自哪个系统,迁移过来的数据有这个字段
+	private Long oriUserId = 0l;	//源用户ID,迁移过来的数据有这个字段
+
+	
+	public String getSectId() {
+		return sectId;
+	}
+
+	public void setSectId(String sectId) {
+		this.sectId = sectId;
+	}
+
+	public String getCspId() {
+		return cspId;
+	}
+
+	public void setCspId(String cspId) {
+		this.cspId = cspId;
+	}
+
 	public String getOfficeTel() {
 		return officeTel;
 	}
@@ -86,7 +103,7 @@ public class User extends BaseModel{
 	public void setOfficeTel(String officeTel) {
 		this.officeTel = officeTel;
 	}
-	
+
 	public long getCurrentAddrId() {
 		return currentAddrId;
 	}
@@ -384,64 +401,28 @@ public class User extends BaseModel{
 		this.newRegiste = isNewRegiste;
 	}
 
-	public String getBindAppId() {
-		return bindAppId;
+	public String getOriSys() {
+		return oriSys;
 	}
 
-	public void setBindAppId(String bindAppId) {
-		this.bindAppId = bindAppId;
+	public void setOriSys(String oriSys) {
+		this.oriSys = oriSys;
 	}
 
-	public String getBindOpenId() {
-		return bindOpenId;
+	public Long getOriUserId() {
+		return oriUserId;
 	}
 
-	public void setBindOpenId(String bindOpenId) {
-		this.bindOpenId = bindOpenId;
+	public void setOriUserId(Long oriUserId) {
+		this.oriUserId = oriUserId;
 	}
 
-	public long getTotal_bind() {
-		return total_bind;
+	public String getAppId() {
+		return appId;
 	}
 
-	public void setTotal_bind(long total_bind) {
-		this.total_bind = total_bind;
-	}
-
-	public String getSect_id() {
-		if(StringUtil.isEmpty(sect_id))
-		{
-			sect_id = "0";
-		}
-		return sect_id;
-	}
-
-	public void setSect_id(String sect_id) {
-		this.sect_id = sect_id;
-	}
-
-	public String getCell_id() {
-		return cell_id;
-	}
-
-	public void setCell_id(String cell_id) {
-		this.cell_id = cell_id;
-	}
-
-	public String getCell_addr() {
-		return cell_addr;
-	}
-
-	public void setCell_addr(String cell_addr) {
-		this.cell_addr = cell_addr;
-	}
-
-	public String getSect_name() {
-		return sect_name;
-	}
-
-	public void setSect_name(String sect_name) {
-		this.sect_name = sect_name;
+	public void setAppId(String appId) {
+		this.appId = appId;
 	}
 
 	@Override
@@ -454,12 +435,10 @@ public class User extends BaseModel{
 				+ ", age=" + age + ", city=" + city + ", country=" + country + ", province=" + province + ", language="
 				+ language + ", headimgurl=" + headimgurl + ", subscribe_time=" + subscribe_time + ", registerDate="
 				+ registerDate + ", identityCard=" + identityCard + ", zhima=" + zhima + ", lvdou=" + lvdou
-				+ ", couponCount=" + couponCount + ", bindAppId=" + bindAppId + ", bindOpenId=" + bindOpenId
-				+ ", shareCode=" + shareCode + ", newRegiste=" + newRegiste + ", total_bind=" + total_bind
-				+ ", sect_id=" + sect_id + ", sect_name=" + sect_name + ", cell_id=" + cell_id + ", cell_addr="
-				+ cell_addr + ", officeTel=" + officeTel + "]";
+				+ ", couponCount=" + couponCount + ", shareCode=" + shareCode + ", newRegiste=" + newRegiste
+				+ ", officeTel=" + officeTel + ", sectId=" + sectId + ", cspId=" + cspId + ", appId=" + appId
+				+ ", oriSys=" + oriSys + ", oriUserId=" + oriUserId + "]";
 	}
-
 	
 
 	

@@ -5,15 +5,21 @@
 package com.yumu.hexie.service.repair;
 
 import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.domain.Page;
 
 import com.yumu.hexie.integration.wechat.entity.common.JsSign;
+import com.yumu.hexie.integration.wuye.vo.BaseRequestDTO;
 import com.yumu.hexie.model.localservice.repair.RepairOrder;
 import com.yumu.hexie.model.localservice.repair.RepairProject;
+import com.yumu.hexie.model.localservice.repair.ServiceOperatorVo;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.repair.req.RepairCancelReq;
 import com.yumu.hexie.service.repair.req.RepairComment;
 import com.yumu.hexie.service.repair.resp.RepairListItem;
 import com.yumu.hexie.vo.req.RepairOrderReq;
+
 
 /**
  * <pre>
@@ -47,4 +53,21 @@ public interface RepairService {
     public List<RepairProject> queryProject(int repairType);
     
     public Long reassgin(long orderId, User user);
+	public Page<RepairOrder> getRepairOderList(BaseRequestDTO<Map<String,String>> baseRequestDTO);
+	
+	public Page<Object> getServiceoperator(BaseRequestDTO<Map<String,String>> baseRequestDTO);
+	
+	//保存维修工
+	public int saveRepiorOperator(BaseRequestDTO<ServiceOperatorVo> baseRequestDTO);
+	//根据维修工id获取信息
+	public Map<String, Object> operatorInfo(BaseRequestDTO<String> baseRequestDTO);
+	//删除维修工信息
+	public void deleteOperator(BaseRequestDTO<Map<String, String>> baseRequestDTO);
+	//根据电话检验维修员是否存在
+	public int checkTel(BaseRequestDTO<String> baseRequestDTO);
+	
+	//根据维修工id获取服务区域
+	public List<String> showSect(String id);
+	//根据电话获取用户
+	public List<User> getHexieUserInfo(String data);
 }
