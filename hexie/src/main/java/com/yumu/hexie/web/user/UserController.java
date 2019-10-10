@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.yumu.hexie.common.Constants;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.StringUtil;
-import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.user.UserWeiXin;
 import com.yumu.hexie.model.localservice.HomeServiceConstant;
 import com.yumu.hexie.model.promotion.coupon.Coupon;
@@ -86,33 +84,17 @@ public class UserController extends BaseController{
 		User sessionUser = user;
 		try {
 			
-			String oriApp = request.getParameter("oriApp");
-			log.info("oriApp : " + oriApp);
-			if (StringUtil.isEmpty(oriApp)) {
-				oriApp = ConstantWeChat.APPID;
-			}
-			
 			log.info("user in session :" + sessionUser);
 			List<User> userList = userService.getByOpenId(user.getOpenid());
 			if (userList!=null) {
 				for (User baseduser : userList) {
-					
 					if (baseduser.getId() == user.getId()) {
-						user = baseduser;
-						break;
-					}else if (StringUtils.isEmpty(baseduser.getId())&&baseduser.getOriUserId() == user.getId() ) {	//从其他公众号迁移过来的用户，登陆时session中应该是源系统的userId，所以跟原系统的比较。
 						user = baseduser;
 						break;
 					}
 				}
 			}
 			user = userService.getById(user.getId());
-			if (user != null) {
-				String userAppId = user.getAppId();	//如果根据session中信息获得的用户并非当前公众号的，比如宝房用户登陆合协公众号，则需要清空session，让他重新登陆
-				if (!oriApp.equals(userAppId)) {
-					user = null;
-				}
-			}
 			if(user != null){
 			    session.setAttribute(Constants.USER, user);
 			    UserInfo userInfo = new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId()));
@@ -122,7 +104,7 @@ public class UserController extends BaseController{
 			} else {
 				log.error("current user id in session is not the same with the id in database. user : " + sessionUser + ", sessionId: " + session.getId());
 				session.setMaxInactiveInterval(1);//将会话过期
-				Thread.sleep(2000);
+				Thread.sleep(1000);
 				return new BaseResult<UserInfo>().success(null);
 			}
 		} catch (Exception e) {
