@@ -123,5 +123,14 @@ public class HexieHouse implements Serializable {
 	public void setPark_inf(List<ParkInfo> park_inf) {
 		this.park_inf = park_inf;
 	}
+	@Override
+	public String toString() {
+		return "HexieHouse [mng_cell_id=" + mng_cell_id + ", sect_name=" + sect_name + ", city_name=" + city_name
+				+ ", cell_addr=" + cell_addr + ", cnst_area=" + cnst_area + ", ver_no=" + ver_no + ", park_inf="
+				+ park_inf + ", province_id=" + province_id + ", province_name=" + province_name + ", city_id="
+				+ city_id + ", region_id=" + region_id + ", region_name=" + region_name + ", sect_addr=" + sect_addr
+				+ ", sect_id=" + sect_id + ", csp_id=" + csp_id + ", center_id=" + center_id + "]";
+	}
+	
 	
 }
