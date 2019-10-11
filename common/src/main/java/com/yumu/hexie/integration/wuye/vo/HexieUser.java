@@ -24,7 +24,8 @@ public class HexieUser implements Serializable {
 	private String user_tel;
 	private String is_house;//房屋数
 	private String office_tel;//小区电话
-	private String cell_addr;//小区地址
+	private String cell_id;	//房屋ID
+	private String cell_addr;//房屋地址
 	private String sect_name;//小区名字
 	private long province_id;//省id
 	private String province_name;//省名
@@ -163,6 +164,12 @@ public class HexieUser implements Serializable {
 	}
 	public void setCell_addr(String cell_addr) {
 		this.cell_addr = cell_addr;
+	}
+	public String getCell_id() {
+		return cell_id;
+	}
+	public void setCell_id(String cell_id) {
+		this.cell_id = cell_id;
 	}
 	
 }

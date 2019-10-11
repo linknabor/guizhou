@@ -382,65 +382,80 @@ public class WuyeServiceImpl implements WuyeService {
 				}
 			}
 			
-			List<Region> re=regionService.findAllBySectId(u.getSect_id());
-			if(re.size()==0){
-				log.error("未查询到小区！"+u.getSect_name());
-				return;
+			List<Region> re = null;
+			if (u.getSect_id() != null) {
+				re = regionService.findAllBySectId(u.getSect_id());
+				if(re.size()==0){
+					log.info("未查询到小区！"+u.getSect_name());
+				}
 			}
+			
 			Address add = new Address();
+			boolean hasAddr = false;
 			if (list.size() > 0) {
 				add = list.get(0);
+				hasAddr = true;
 			} else {
 				
-				add.setReceiveName(user.getNickname());
-				add.setTel(user.getTel());
-				add.setUserId(user.getId());
-				add.setCreateDate(System.currentTimeMillis());
-				add.setXiaoquId(re.get(0).getId());
-				add.setXiaoquName(u.getSect_name());
-				add.setDetailAddress(u.getCell_addr());
-				add.setCity(u.getCity_name());
-				Long cityId = map.get(u.getCity_name());
-				if (cityId == null) {
-					cityId = 0l;
+				if (re != null && re.size()> 0) {
+					
+					add.setReceiveName(user.getNickname());
+					add.setTel(user.getTel());
+					add.setUserId(user.getId());
+					add.setCreateDate(System.currentTimeMillis());
+					add.setXiaoquId(re.get(0).getId());
+					add.setXiaoquName(u.getSect_name());
+					add.setDetailAddress(u.getCell_addr());
+					add.setCity(u.getCity_name());
+					Long cityId = map.get(u.getCity_name());
+					if (cityId == null) {
+						cityId = 0l;
+					}
+					add.setCityId(cityId);
+					add.setCounty(u.getRegion_name());
+					Long countyId = map.get(u.getRegion_name());
+					if (countyId == null) {
+						countyId = 0l;
+					}
+					add.setCountyId(countyId);
+					add.setProvince(u.getProvince_name());
+					Long provinceId = map.get(u.getProvince_name());
+					if (provinceId == null) {
+						provinceId = 0l;
+					}
+					add.setProvinceId(provinceId);
+					double latitude = 0;
+					double longitude = 0;
+					if (user.getLatitude() != null) {
+						latitude = user.getLatitude();
+					}
+	
+					if (user.getLongitude() != null) {
+						longitude = user.getLongitude();
+					}
+					add.setLatitude(latitude);
+					add.setLongitude(longitude);
+					user.setXiaoquId(re.get(0).getId());
+					hasAddr = true;
+					
 				}
-				add.setCityId(cityId);
-				add.setCounty(u.getRegion_name());
-				Long countyId = map.get(u.getRegion_name());
-				if (countyId == null) {
-					countyId = 0l;
-				}
-				add.setCountyId(countyId);
-				add.setProvince(u.getProvince_name());
-				Long provinceId = map.get(u.getProvince_name());
-				if (provinceId == null) {
-					provinceId = 0l;
-				}
-				add.setProvinceId(provinceId);
-				double latitude = 0;
-				double longitude = 0;
-				if (user.getLatitude() != null) {
-					latitude = user.getLatitude();
-				}
-
-				if (user.getLongitude() != null) {
-					longitude = user.getLongitude();
-				}
-				add.setLatitude(latitude);
-				add.setLongitude(longitude);
 
 			}
-			add.setMain(true);
-			addressRepository.save(add);
-			user.setProvince(u.getProvince_name());
-			user.setCity(u.getCity_name());
-			user.setCounty(u.getRegion_name());
-			user.setXiaoquId(re.get(0).getId());
-			user.setXiaoquName(u.getSect_name());
-			log.error("保存用户成功！！！");
+			if (hasAddr) {
+				add.setMain(true);
+				addressRepository.save(add);
+			}
+			
 		}
+		user.setTotalBind(user.getTotalBind()+1);
+		user.setXiaoquName(u.getSect_name());
+		user.setProvince(u.getProvince_name());
+		user.setCity(u.getCity_name());
+		user.setCounty(u.getRegion_name());
 		user.setSectId(u.getSect_id());	
 		user.setCspId(u.getCsp_id());
+		user.setCellAddr(u.getCell_addr());
+		user.setCellId(u.getCell_id());
 		userService.save(user);
 		
 	}

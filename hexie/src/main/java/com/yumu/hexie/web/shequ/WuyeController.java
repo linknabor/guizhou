@@ -95,7 +95,7 @@ public class WuyeController extends BaseController {
 
 	@RequestMapping(value = "/hexiehouse/delete/{houseId}", method = RequestMethod.GET)
 	@ResponseBody
-	public BaseResult<List<HexieHouse>> deleteHouse(@ModelAttribute(Constants.USER) User user,
+	public BaseResult<List<HexieHouse>> deleteHouse(HttpSession session, @ModelAttribute(Constants.USER) User user,
 			@PathVariable String houseId) throws Exception {
 		if (StringUtil.isEmpty(user.getWuyeId())) {
 			return BaseResult.fail("删除房子失败！请重新访问页面并操作！");
@@ -107,9 +107,13 @@ public class WuyeController extends BaseController {
 			log.error("这里是删除房子后保存的电话");
 			log.error("保存电话到user表==》开始");
 			user.setOfficeTel(r.getData());
-			user.setSectId("0");
-			user.setCspId("0");
+			user.setTotalBind(user.getTotalBind()-1);
+			if (user.getTotalBind()<=0) {
+				user.setSectId("0");
+				user.setCspId("0");
+			}
 			userService.save(user);
+			session.setAttribute(Constants.USER, user);
 			log.error("保存电话到user表==》成功");
 			return BaseResult.successResult("删除房子成功！");
 		} else {
@@ -144,7 +148,7 @@ public class WuyeController extends BaseController {
 
 	@RequestMapping(value = "/addhexiehouse", method = RequestMethod.POST)
 	@ResponseBody
-	public BaseResult<HexieHouse> addhouses(@ModelAttribute(Constants.USER) User user,
+	public BaseResult<HexieHouse> addhouses(HttpSession session, @ModelAttribute(Constants.USER) User user,
 			@RequestParam(required = false) String stmtId, @RequestParam(required = false) String houseId,
 			@RequestParam(required = false) String area) throws Exception {
 		HexieUser u = wuyeService.bindHouse(user.getWuyeId(), stmtId, houseId);
@@ -159,6 +163,8 @@ public class WuyeController extends BaseController {
 			log.error("保存电话到user表==》成功");
 			wuyeService.saveRegion(u);
 			wuyeService.setDefaultAddress(user, u);
+			session.setAttribute(Constants.USER, user);
+			
 		}
 		return BaseResult.successResult(u);
 	}
@@ -548,41 +554,10 @@ public class WuyeController extends BaseController {
 	@ResponseBody
 	public BaseResult initSessionForTest(HttpSession session, @PathVariable String userId) {
 
-		User user = (User) session.getAttribute(Constants.USER);
-		if (session != null) {
-
-			if (user == null) {
-				user = new User();
-				user.setCity("上海市");
-				user.setCityId(20);
-				user.setProvince("上海");
-				user.setProvinceId(19);
-				if (!StringUtil.isEmpty(userId)) {
-					user.setId(Long.valueOf(userId));
-				} else {
-					user.setId(10);
-				}
-				user.setTel("18116419486");
-				user.setOpenid("ofDNH0o8JD8qC1n2P9KU5qq0UeWc");
-				user.setName("yiming");
-				user.setNickname("yiming");
-				user.setXiaoquName("西部花苑");
-				user.setXiaoquId(26387);
-				user.setCountyId(0);
-				user.setWuyeId("180613400000291915");
-				user.setHeadimgurl(
-						"http://wx.qlogo.cn/mmopen/ajNVdqHZLLBIY2Jial97RCIIyq0P4L8dhGicoYDlbNXqW5GJytxmkRDFdFlX9GScrsvo7vBuJuaEoMZeiaBPnb6AA/0");
-			} else {
-				if (!StringUtil.isEmpty(userId)) {
-
-					user = userRepository.findOne(Long.valueOf(userId));
-				}
-			}
-
-			// TODO set value on redis
+		if (!StringUtil.isEmpty(userId)) {
+			User user = userRepository.findOne(Long.valueOf(userId));
 			session.setAttribute("sessionUser", user);
 		}
-
 		return BaseResult.successResult("succeeded");
 
 	}
