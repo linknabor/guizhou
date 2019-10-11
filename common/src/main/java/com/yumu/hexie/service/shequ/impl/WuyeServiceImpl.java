@@ -400,12 +400,23 @@ public class WuyeServiceImpl implements WuyeService {
 				add.setXiaoquName(u.getSect_name());
 				add.setDetailAddress(u.getCell_addr());
 				add.setCity(u.getCity_name());
-				add.setCityId(map.get(u.getCity_name()));
+				Long cityId = map.get(u.getCity_name());
+				if (cityId == null) {
+					cityId = 0l;
+				}
+				add.setCityId(cityId);
 				add.setCounty(u.getRegion_name());
-				add.setCountyId(map.get(u.getRegion_name()));
+				Long countyId = map.get(u.getRegion_name());
+				if (countyId == null) {
+					countyId = 0l;
+				}
+				add.setCountyId(countyId);
 				add.setProvince(u.getProvince_name());
-				add.setProvinceId(map.get(u.getProvince_name()));
-				//add.setXiaoquAddress(u.getSect_addr());
+				Long provinceId = map.get(u.getProvince_name());
+				if (provinceId == null) {
+					provinceId = 0l;
+				}
+				add.setProvinceId(provinceId);
 				double latitude = 0;
 				double longitude = 0;
 				if (user.getLatitude() != null) {
