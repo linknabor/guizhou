@@ -135,7 +135,7 @@ public class WuyeUtil {
 	
 	// 4.根据订单查询房产信息
 	public static BaseResult<HexieHouse> getHouse(String userId,String stmtId) {
-		String url = REQUEST_ADDRESS + String.format(SYS_ADD_HOUSE_URL, userId,stmtId);
+		String url = REQUEST_ADDRESS + String.format(SYS_ADD_HOUSE_URL, userId,stmtId, "");
 		return (BaseResult<HexieHouse>)httpGet(url,HexieHouse.class);
 	}
 
