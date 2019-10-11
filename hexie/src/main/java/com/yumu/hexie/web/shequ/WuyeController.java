@@ -31,7 +31,6 @@ import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.InvoiceInfo;
-import com.yumu.hexie.integration.wuye.vo.PayResult;
 import com.yumu.hexie.integration.wuye.vo.PayWater;
 import com.yumu.hexie.integration.wuye.vo.PaymentInfo;
 import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
@@ -319,25 +318,20 @@ public class WuyeController extends BaseController {
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/noticePayed", method = RequestMethod.POST)
 	@ResponseBody
-	public BaseResult<String> noticePayed(@ModelAttribute(Constants.USER) User user,
+	public BaseResult<String> noticePayed(HttpSession session, @ModelAttribute(Constants.USER) User user,
 			@RequestParam(required = false) String billId, @RequestParam(required = false) String stmtId,
 			@RequestParam(required = false) String tradeWaterId, @RequestParam(required = false) String packageId,
-			@RequestParam(required = false) String feePrice, @RequestParam(required = false) String couponId)
+			@RequestParam(required = false) String feePrice, @RequestParam(required = false) String couponId,
+			@RequestParam(required = false) String bind_switch)
 			throws Exception {
-		PayResult payResult = wuyeService.noticePayed(user.getWuyeId(), billId, stmtId, tradeWaterId, packageId);
+		
+		wuyeService.noticePayed(user, billId, stmtId, tradeWaterId, packageId, bind_switch);
 
-		String trade_status = payResult.getMerger_status();
-		// if ("01".equals(trade_status)) { //01表示支付成功，02表示未支付成功
-		//
-		//
-		// }else {
-		// return BaseResult.fail("支付结果未知，请稍后在支付记录界面查询。");
-		// }
 		pointService.addZhima(user, 10, "zhima-bill-" + user.getId() + "-" + billId);
 		if (couponId != null && couponId != "") {
 			couponService.comsume(feePrice, Long.valueOf(couponId));
 		}
-
+		session.setAttribute(Constants.USER, user);
 		return BaseResult.successResult("支付成功。");
 	}
 

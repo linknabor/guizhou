@@ -73,12 +73,11 @@ public class User extends BaseModel{
 	
 	private String sectId;//小区id
 	private String cspId;//公司
+	private Integer totalBind = 0;	//总共绑定的房屋数
 	
-	private String appId;
-	
-	private String oriSys;	//来自哪个系统,迁移过来的数据有这个字段
-	private Long oriUserId = 0l;	//源用户ID,迁移过来的数据有这个字段
-
+	private String cellId;	//绑定房屋的ID，贵州保留这个字段，不知道有没有用
+	private String cellAddr;	//绑定房屋的地址，贵州保留这个字段，不知道有没有用
+	private String sectName;	//绑定房屋锁在小区名称，贵州保留这个字段，不知道有没有用
 	
 	public String getSectId() {
 		return sectId;
@@ -401,28 +400,36 @@ public class User extends BaseModel{
 		this.newRegiste = isNewRegiste;
 	}
 
-	public String getOriSys() {
-		return oriSys;
+	public Integer getTotalBind() {
+		return totalBind;
 	}
 
-	public void setOriSys(String oriSys) {
-		this.oriSys = oriSys;
+	public void setTotalBind(Integer totalBind) {
+		this.totalBind = totalBind;
+	}
+	
+	public String getCellAddr() {
+		return cellAddr;
 	}
 
-	public Long getOriUserId() {
-		return oriUserId;
+	public void setCellAddr(String cellAddr) {
+		this.cellAddr = cellAddr;
+	}
+	
+	public String getSectName() {
+		return sectName;
 	}
 
-	public void setOriUserId(Long oriUserId) {
-		this.oriUserId = oriUserId;
+	public void setSectName(String sectName) {
+		this.sectName = sectName;
+	}
+	
+	public String getCellId() {
+		return cellId;
 	}
 
-	public String getAppId() {
-		return appId;
-	}
-
-	public void setAppId(String appId) {
-		this.appId = appId;
+	public void setCellId(String cellId) {
+		this.cellId = cellId;
 	}
 
 	@Override
@@ -436,10 +443,8 @@ public class User extends BaseModel{
 				+ language + ", headimgurl=" + headimgurl + ", subscribe_time=" + subscribe_time + ", registerDate="
 				+ registerDate + ", identityCard=" + identityCard + ", zhima=" + zhima + ", lvdou=" + lvdou
 				+ ", couponCount=" + couponCount + ", shareCode=" + shareCode + ", newRegiste=" + newRegiste
-				+ ", officeTel=" + officeTel + ", sectId=" + sectId + ", cspId=" + cspId + ", appId=" + appId
-				+ ", oriSys=" + oriSys + ", oriUserId=" + oriUserId + "]";
+				+ ", officeTel=" + officeTel + ", sectId=" + sectId + ", cspId=" + cspId + ", totalBind=" + totalBind
+				+ ", cellId=" + cellId + ", cellAddr=" + cellAddr + ", sectName=" + sectName + "]";
 	}
-	
 
-	
 }

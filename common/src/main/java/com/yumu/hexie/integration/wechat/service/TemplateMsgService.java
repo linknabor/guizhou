@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import com.yumu.hexie.common.util.AppUtil;
 import com.yumu.hexie.common.util.ConfigUtil;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.JacksonJsonUtil;
@@ -199,7 +198,6 @@ public class TemplateMsgService {
     	msg.setData(vo);
     	msg.setTemplate_id(YUYUE_ASSIGN_TEMPLATE);
     	String url = GotongServiceImpl.YUYUE_NOTICE + hOrder.getyOrderId();
-    	url = AppUtil.addAppOnUrl(url, user.getAppId());
     	msg.setUrl(url);
     	msg.setTouser(openId);
     	TemplateMsgService.sendMsg(msg, accessToken);

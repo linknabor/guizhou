@@ -46,7 +46,7 @@ public interface WuyeService {
 				String couponId,String mianBill,String mianAmt, String reduceAmt, 
 				String invoice_title_type, String credit_code, String invoice_title) throws Exception;
 	// 11.通知已支付
-	public PayResult noticePayed(String userId,String billId,String stmtId, String tradeWaterId, String packageId);
+	public PayResult noticePayed(User user,String billId,String stmtId, String tradeWaterId, String packageId, String bind_switch);
 	// 12.查询是否已经用过红包
 	public String queryCouponIsUsed(String userId);
 	//13.更新电子发票抬头信息
@@ -100,5 +100,7 @@ public interface WuyeService {
 	
 	//根据regionName去community查询sectId
 	public String getSectIdByRegionName(String regionName);
+	HexieHouse getHouse(String userId, String stmtId, String house_id);
+	HexieUser bindHouse(User user, String stmtId, HexieHouse house);
 	
 }

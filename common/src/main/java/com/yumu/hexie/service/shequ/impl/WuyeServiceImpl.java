@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.yumu.hexie.common.util.TransactionUtil;
@@ -53,6 +54,7 @@ import com.yumu.hexie.service.user.UserService;
 
 @Service("wuyeService")
 public class WuyeServiceImpl implements WuyeService {
+	
 	private static final Logger log = LoggerFactory.getLogger(WuyeServiceImpl.class);
 	
 	private static Map<String,Long> map=null;
@@ -161,9 +163,89 @@ public class WuyeServiceImpl implements WuyeService {
 	}
 
 	@Override
-	public PayResult noticePayed(String userId, String billId, String stmtId, String tradeWaterId, String packageId) {
-		return WuyeUtil.noticePayed(userId, billId, stmtId, tradeWaterId, packageId).getData();
+	public PayResult noticePayed(User user, String billId, String stmtId, String tradeWaterId, String packageId, String bind_switch) {
+		PayResult pay = WuyeUtil.noticePayed(user.getWuyeId(), billId, stmtId, tradeWaterId, packageId).getData();
+		//如果switch为1，则顺便绑定该房屋
+		if("1".equals(bind_switch))
+		{
+			BaseResult<String> result = WuyeUtil.getPayWaterToCell(user.getWuyeId(), tradeWaterId);
+			String ids = result.getResult();
+			String[] idsSuff = ids.split(",");
+			//因为考虑一次支持存在多套房子的情况
+			for (int i = 0; i < idsSuff.length; i++) {
+				try {
+					HexieHouse house = getHouse(user.getWuyeId(), stmtId, idsSuff[i]);
+					if(house!=null)
+					{
+						bindHouse(user, stmtId, house);
+					}
+				} catch(Exception e)
+				{
+					//不影响支付完整性，如果有问题则不向外面抛
+					log.error("bind house error:"+e);
+				}
+			}
+		}
+		return pay;
+	
 	}
+	
+	@Override
+	@Transactional(propagation=Propagation.REQUIRED)
+	public HexieUser bindHouse(User user, String stmtId, HexieHouse house) {
+		
+		log.info("userId : " + user.getId());
+		log.info("hosue is :" + house.toString());
+		
+		User currUser = userRepository.findOne(user.getId());
+		
+		log.error("total_bind :" + currUser.getTotalBind());
+		
+		if (currUser.getTotalBind() <= 0) {//从未绑定过的做新增
+			currUser.setTotalBind(1);
+			currUser.setSectId(house.getSect_id());
+			currUser.setSectName(house.getSect_name());
+			currUser.setCellId(house.getMng_cell_id());
+			currUser.setCellAddr(house.getCell_addr());
+			//这个user在外层需要重新set回session中
+			user.setTotalBind(1);
+			user.setSectId(house.getSect_id());
+			user.setSectName(house.getSect_name());
+			user.setCellId(house.getMng_cell_id());
+			user.setCellAddr(house.getCell_addr());	//set到session
+			
+		}else {
+			user.setTotalBind(user.getTotalBind()+1);
+			currUser.setTotalBind((currUser.getTotalBind()+1));
+		}
+		
+		BaseResult<HexieUser> r= WuyeUtil.bindHouse(currUser.getWuyeId(), stmtId, house.getMng_cell_id());
+		if ("04".equals(r.getResult())){
+			throw new BizValidateException("当前用户已经认领该房屋!");
+		}
+		if ("05".equals(r.getResult())) {
+			throw new BizValidateException("用户当前绑定房屋与已绑定房屋不属于同个小区，暂不支持此功能。");
+		}
+		if ("01".equals(r.getResult())) {
+			throw new BizValidateException("账户不存在");
+		}
+		
+		if (r.isSuccess()) {
+			//添加电话到user表
+			currUser.setOfficeTel(r.getData().getOffice_tel());	//保存到数据库
+			user.setOfficeTel(r.getData().getOffice_tel());	//set到session
+		}
+		userRepository.save(currUser);
+		
+		return r.getData();
+	}
+	
+	
+	@Override
+	public HexieHouse getHouse(String userId, String stmtId, String house_id) {
+		return WuyeUtil.getHouse(userId, stmtId, house_id).getData();
+	}
+	
 
 	@Override
 	public BillListVO quickPayInfo(String stmtId, String currPage, String totalCount) {
