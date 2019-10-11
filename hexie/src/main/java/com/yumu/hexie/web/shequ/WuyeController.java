@@ -97,6 +97,8 @@ public class WuyeController extends BaseController {
 	@ResponseBody
 	public BaseResult<List<HexieHouse>> deleteHouse(HttpSession session, @ModelAttribute(Constants.USER) User user,
 			@PathVariable String houseId) throws Exception {
+		
+		user = userService.getById(user.getId());
 		if (StringUtil.isEmpty(user.getWuyeId())) {
 			return BaseResult.fail("删除房子失败！请重新访问页面并操作！");
 		}
@@ -107,7 +109,12 @@ public class WuyeController extends BaseController {
 			log.error("这里是删除房子后保存的电话");
 			log.error("保存电话到user表==》开始");
 			user.setOfficeTel(r.getData());
-			user.setTotalBind(user.getTotalBind()-1);
+			Integer totalBind = user.getTotalBind();
+			if (totalBind == null) {
+				totalBind = 0;
+			}else {
+				user.setTotalBind(totalBind-1);
+			}
 			if (user.getTotalBind()<=0) {
 				user.setSectId("0");
 				user.setCspId("0");
@@ -151,6 +158,8 @@ public class WuyeController extends BaseController {
 	public BaseResult<HexieHouse> addhouses(HttpSession session, @ModelAttribute(Constants.USER) User user,
 			@RequestParam(required = false) String stmtId, @RequestParam(required = false) String houseId,
 			@RequestParam(required = false) String area) throws Exception {
+		
+		user = userService.getById(user.getId());
 		HexieUser u = wuyeService.bindHouse(user.getWuyeId(), stmtId, houseId);
 		log.error("HexieUser u = " + u);
 		if (u != null) {

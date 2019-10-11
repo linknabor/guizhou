@@ -447,7 +447,11 @@ public class WuyeServiceImpl implements WuyeService {
 			}
 			
 		}
-		user.setTotalBind(user.getTotalBind()+1);
+		Integer totalBind = user.getTotalBind();
+		if (totalBind == null) {
+			totalBind = 0;
+		}
+		user.setTotalBind(totalBind+1);
 		user.setXiaoquName(u.getSect_name());
 		user.setProvince(u.getProvince_name());
 		user.setCity(u.getCity_name());
