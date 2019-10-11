@@ -113,9 +113,10 @@ public class WuyeController extends BaseController {
 			if (totalBind == null) {
 				totalBind = 0;
 			}else {
-				user.setTotalBind(totalBind-1);
+				totalBind = totalBind -1;
+				user.setTotalBind(totalBind);
 			}
-			if (user.getTotalBind()<=0) {
+			if (totalBind<=0) {
 				user.setSectId("0");
 				user.setCspId("0");
 			}
