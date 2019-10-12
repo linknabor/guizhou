@@ -114,10 +114,13 @@ public class WuyeController extends BaseController {
 			user.setOfficeTel(tel);
 			
 			Integer totalBind = user.getTotalBind();
-			if (totalBind == null || StringUtils.isEmpty(tel) || totalBind == 0) {
+			if (totalBind == null) {
 				totalBind = 0;
 			}else {
 				totalBind = totalBind -1;
+			}
+			if ( StringUtils.isEmpty(tel)) {	//如果电话是空，表明所有房子都已解绑，直接置0
+				totalBind = 0;
 			}
 			user.setTotalBind(totalBind);
 			if (totalBind<=0) {

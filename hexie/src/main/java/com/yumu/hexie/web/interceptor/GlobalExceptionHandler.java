@@ -34,17 +34,18 @@ public class GlobalExceptionHandler<T> {
     @Inject
     private MessageSource messageSource;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(WechatController.class);
+	private static final Logger logger = LoggerFactory.getLogger(WechatController.class);
 
     @SuppressWarnings("rawtypes")
 	@ExceptionHandler(value = Exception.class)
     @ResponseBody
     public BaseResult defaultErrorHandler(HttpServletRequest req, HttpServletResponse res, Exception e) throws Exception {
         if(e instanceof HttpSessionRequiredException) {
-            LOGGER.error("用户未登录！");
+            logger.error("用户未登录！");
             return BaseResult.fail(BaseResult.NEED_LOGIN);
         }
-        LOGGER.error("内部处理异常", e);
+        logger.error("请求的链接：" + req.getRequestURI());
+        logger.error("内部处理异常", e);
     	if(e instanceof BizValidateException) {
     		return BaseResult.fail(e.getMessage());
     	}
