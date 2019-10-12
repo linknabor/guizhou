@@ -8,9 +8,6 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +23,6 @@ import com.yumu.hexie.model.distribution.region.RegionRepository;
 import com.yumu.hexie.model.user.Address;
 import com.yumu.hexie.model.user.AddressRepository;
 import com.yumu.hexie.model.user.User;
-import com.yumu.hexie.model.user.Xiaoqu;
-import com.yumu.hexie.model.user.XiaoquRepository;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.user.AddressService;
 import com.yumu.hexie.service.user.UserService;
@@ -46,8 +41,6 @@ public class AddressServiceImpl implements AddressService {
     private AmapAddressRepository amapAddressRepository;
     @Inject
     private RegionRepository regionRepository;
-    @Autowired
-    private XiaoquRepository xiaoquRepository;
     
     @Override
     public Address addAddress(AddressReq addressReq) {
@@ -264,9 +257,4 @@ public class AddressServiceImpl implements AddressService {
 	public List<Address> getAddressByShareCode(String shareCode) {
 		return addressRepository.getAddressByShareCode(shareCode);
 	}
-	
-	@Override
-    public List<Xiaoqu> queryXiaoqu() {
-        return xiaoquRepository.findAll(new Sort(Direction.ASC, "sort"));
-    }
 }

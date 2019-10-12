@@ -22,7 +22,6 @@ import com.yumu.hexie.model.distribution.region.AmapAddress;
 import com.yumu.hexie.model.distribution.region.Region;
 import com.yumu.hexie.model.user.Address;
 import com.yumu.hexie.model.user.User;
-import com.yumu.hexie.model.user.Xiaoqu;
 import com.yumu.hexie.service.user.AddressService;
 import com.yumu.hexie.service.user.PointService;
 import com.yumu.hexie.service.user.RegionService;
@@ -169,11 +168,4 @@ public class AddressController extends BaseController{
 		vo.setBuyer(user);
 		return new BaseResult<SharedVo>().successResult(vo);
 	}
-	
-	@RequestMapping(value = "/queryXiaoqus", method = RequestMethod.POST)
-    @ResponseBody
-    public BaseResult<List<Xiaoqu>> queryXiaoqus(){
-        return new BaseResult<List<Xiaoqu>>().success(addressService.queryXiaoqu());
-    }
-	
 }
