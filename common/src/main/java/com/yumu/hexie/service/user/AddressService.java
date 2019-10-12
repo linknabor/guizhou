@@ -8,6 +8,7 @@ import com.yumu.hexie.model.distribution.region.AmapAddress;
 import com.yumu.hexie.model.distribution.region.Region;
 import com.yumu.hexie.model.user.Address;
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.model.user.Xiaoqu;
 import com.yumu.hexie.service.user.req.AddressReq;
 
 
@@ -43,5 +44,8 @@ public interface AddressService {
 	public List<Address> getAddressByMain(long id,boolean main);
 	
 	public List<Address> getAddressByShareCode(String shareCode);
+	
+	
+	public List<Xiaoqu> queryXiaoqu();
 	
 }

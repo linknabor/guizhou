@@ -401,6 +401,9 @@ public class User extends BaseModel{
 	}
 
 	public Integer getTotalBind() {
+		if (null == totalBind) {
+			totalBind = 0;
+		}
 		return totalBind;
 	}
 
