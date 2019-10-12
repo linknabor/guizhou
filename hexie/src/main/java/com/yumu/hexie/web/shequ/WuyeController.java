@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -103,19 +104,22 @@ public class WuyeController extends BaseController {
 			return BaseResult.fail("删除房子失败！请重新访问页面并操作！");
 		}
 		com.yumu.hexie.integration.wuye.resp.BaseResult<String> r = wuyeService.deleteHouse(user.getWuyeId(), houseId);
-		// boolean r = wuyeService.deleteHouse(user.getWuyeId(), houseId);
 		if ((boolean) r.isSuccess()) {
 			// 添加电话到user表
 			log.error("这里是删除房子后保存的电话");
 			log.error("保存电话到user表==》开始");
-			user.setOfficeTel(r.getData());
+			
+			//返回小区电话，如果绑定 了多套房子，则在删除一套后，返回没被删除的房子所在小区的电话，如果为空，则说明绑定的房子已都删除
+			String tel = r.getData();
+			user.setOfficeTel(tel);
+			
 			Integer totalBind = user.getTotalBind();
-			if (totalBind == null) {
+			if (totalBind == null || StringUtils.isEmpty(tel) || totalBind == 0) {
 				totalBind = 0;
 			}else {
 				totalBind = totalBind -1;
-				user.setTotalBind(totalBind);
 			}
+			user.setTotalBind(totalBind);
 			if (totalBind<=0) {
 				user.setSectId("0");
 				user.setCspId("0");
