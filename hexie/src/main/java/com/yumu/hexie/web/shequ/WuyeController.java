@@ -126,6 +126,9 @@ public class WuyeController extends BaseController {
 			if (totalBind<=0) {
 				user.setSectId("0");
 				user.setCspId("0");
+				user.setCellAddr("");
+				user.setCellId("");
+				user.setSectName("");
 			}
 			userService.save(user);
 			session.setAttribute(Constants.USER, user);

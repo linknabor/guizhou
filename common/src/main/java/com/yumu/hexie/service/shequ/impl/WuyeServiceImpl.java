@@ -474,6 +474,7 @@ public class WuyeServiceImpl implements WuyeService {
 		user.setCspId(u.getCsp_id());
 		user.setCellAddr(u.getCell_addr());
 		user.setCellId(u.getCell_id());
+		user.setOfficeTel(u.getOffice_tel());
 		userService.save(user);
 		
 	}
