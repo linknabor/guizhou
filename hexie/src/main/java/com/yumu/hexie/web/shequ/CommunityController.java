@@ -673,11 +673,15 @@ public class CommunityController extends BaseController{
 		if(user == null){
 			throw new BizValidateException("请登录");
 		}
-		
-		Thread ret = communityService.getThreadByTreadId(threadId);
-		String attachmentUrl = ret.getAttachmentUrl();
-		String imgHeight = ret.getImgHeight();
-		String imgWidth = ret.getImgWidth();
+		String attachmentUrl = "";
+		String imgHeight = "";
+		String imgWidth = "";
+		if (type == 0) {
+			Thread ret = communityService.getThreadByTreadId(threadId);
+			attachmentUrl = ret.getAttachmentUrl();
+			imgHeight = ret.getImgHeight();
+			imgWidth = ret.getImgWidth();
+		}
 		
 		if(type==1) {
 			ThreadComment retcomment = communityService.getThreadCommentByTreadId(threadId);
