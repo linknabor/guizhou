@@ -683,7 +683,12 @@ public class WuyeController extends BaseController {
 
 	} 
 	
-	//用户设置小区id公司id
+	/**
+	 * 为绑定过房屋的用户设置cspId和sectId字段。
+	 * @param code
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "/setHasHouseUserSectId", method = RequestMethod.GET)
 	@ResponseBody
 	public BaseResult<String> setHasHouseUserSectId(@RequestParam String code) throws Exception {

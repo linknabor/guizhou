@@ -46,20 +46,20 @@ public class AddUserSectIdWorker implements Runnable{
 	}
 	@SuppressWarnings("unchecked")
 	public void deal(){
-		if(StringUtil.isEmpty(user.getSectId())){
-			HexieUser hexieUser = wuyeService.queryPayUserAndBindHouse(user.getWuyeId());
-			if(!StringUtil.isEmpty(hexieUser.getSect_id())){
-				boolean isSuccess = transactionUtil.transact(s -> wuyeService.setDefaultAddress(user, hexieUser));	
-				if(!isSuccess){
-			    	fail.incrementAndGet();
-			    	log.error("失败用户Id: " + user.getId());
-			    }else{
-			        success.incrementAndGet();
-			    }	
-			}else{
-				fail.incrementAndGet();
-				log.error("未查询到用户房子信息: " + user.getId());
-			}
-		 }
+
+		HexieUser hexieUser = wuyeService.queryPayUserAndBindHouse(user.getWuyeId());
+		if(hexieUser!=null && !StringUtil.isEmpty(hexieUser.getSect_id())){
+			boolean isSuccess = transactionUtil.transact(s -> wuyeService.setDefaultAddress(user, hexieUser));	
+			if(!isSuccess){
+		    	fail.incrementAndGet();
+		    	log.error("失败用户Id: " + user.getId());
+		    }else{
+		        success.incrementAndGet();
+		    }	
+		}else{
+			fail.incrementAndGet();
+			log.error("未查询到用户房子信息: " + user.getId());
+		}
+	 
 	}
 }

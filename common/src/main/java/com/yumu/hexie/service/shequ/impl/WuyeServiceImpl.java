@@ -1,5 +1,6 @@
 package com.yumu.hexie.service.shequ.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import com.yumu.hexie.integration.wuye.vo.InvoiceInfo;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
 import com.yumu.hexie.integration.wuye.vo.PaymentInfo;
 import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
+import com.yumu.hexie.model.ModelConstant;
 import com.yumu.hexie.model.distribution.region.Region;
 import com.yumu.hexie.model.distribution.region.RegionRepository;
 import com.yumu.hexie.model.user.AddRegionSectIdWorker;
@@ -386,7 +388,19 @@ public class WuyeServiceImpl implements WuyeService {
 			if (u.getSect_id() != null) {
 				re = regionService.findAllBySectId(u.getSect_id());
 				if(re.size()==0){
-					log.info("未查询到小区！"+u.getSect_name());
+					log.info("未查询到小区！"+u.getSect_name() + ",开始创建。");
+					Region region = new Region();
+					region.setName(u.getSect_name());
+					region.setParentId(0);
+					region.setParentName(u.getRegion_name());
+					region.setRegionType(ModelConstant.REGION_XIAOQU);
+					region.setLatitude(0d);
+					region.setLongitude(0d);
+					region.setXiaoquAddress(u.getSect_addr());
+					region.setSectId(u.getSect_id());
+					regionRepository.save(region);
+					re = new ArrayList<>();
+					re.add(region);
 				}
 			}
 			
@@ -603,7 +617,7 @@ public class WuyeServiceImpl implements WuyeService {
 		}
 	}
 	public void excuteWorker(List<User> userList,int pageNum) throws InterruptedException{
-		ExecutorService service = Executors.newFixedThreadPool(10);
+		ExecutorService service = Executors.newFixedThreadPool(1);	//region表还没添过的情况下，这里不要使用多线程，会重复添加region
 		//统计成功失败数
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger fail = new AtomicInteger(0);
