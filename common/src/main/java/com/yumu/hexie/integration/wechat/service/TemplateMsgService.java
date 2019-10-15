@@ -13,6 +13,8 @@ import com.yumu.hexie.common.util.ConfigUtil;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.JacksonJsonUtil;
 import com.yumu.hexie.integration.wechat.entity.common.WechatResponse;
+import com.yumu.hexie.integration.wechat.entity.customer.DataJsonVo;
+import com.yumu.hexie.integration.wechat.entity.customer.DataVo;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.HaoJiaAnCommentVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.HaoJiaAnOrderVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.PaySuccessVO;
@@ -23,6 +25,7 @@ import com.yumu.hexie.integration.wechat.entity.templatemsg.TemplateMsg;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.WuyePaySuccessVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.YuyueOrderVO;
 import com.yumu.hexie.integration.wechat.util.WeixinUtil;
+import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.localservice.ServiceOperator;
 import com.yumu.hexie.model.localservice.oldversion.thirdpartyorder.HaoJiaAnComment;
 import com.yumu.hexie.model.localservice.oldversion.thirdpartyorder.HaoJiaAnOrder;
@@ -43,6 +46,7 @@ public class TemplateMsgService {
 	public static String REPAIR_ASSIGN_TEMPLATE = ConfigUtil.get("reapirAssginTemplate");
 	public static String YUYUE_ASSIGN_TEMPLATE = ConfigUtil.get("yuyueNoticeTemplate");
 	public static String COMPLAIN_TEMPLATE = ConfigUtil.get("complainTemplate");
+    public static String THREAD_PUB_URL = ConfigUtil.get("threadPubUrl");
 	
 	/**
 	 * 模板消息发送
@@ -224,4 +228,52 @@ public class TemplateMsgService {
     	TemplateMsgService.sendMsg(msg, accessToken);
     }
 
+    public static void sendPubThreadMsg(ServiceOperator serviceOperator, Thread thread, User pubUser, String accessToken) {
+    	
+    	String msgUrl = THREAD_PUB_URL + thread.getThreadId();
+    	String msgTitle = "您好，您有新的消息";
+    	String msgRemark = "请点击查看具体信息";
+    	String msgColor = "#173177";
+    	
+		TemplateMsg<DataVo> msg = new TemplateMsg<>();
+    	msg.setTouser(serviceOperator.getOpenId());//openID
+    	msg.setUrl(msgUrl);//跳转地址
+    	msg.setTemplate_id(REPAIR_ASSIGN_TEMPLATE);//模板id
+    	
+		DataVo data = new DataVo();
+		DataJsonVo vo = new DataJsonVo();
+		vo.setValue(msgTitle); //标题
+		vo.setColor(msgColor);
+		data.setFirst(vo);
+		
+		DataJsonVo keyword1 = new DataJsonVo();
+		keyword1.setValue(String.valueOf(thread.getThreadId()));//内容1
+		keyword1.setColor(msgColor); 
+		data.setKeyword1(keyword1);
+		
+		DataJsonVo keyword2 = new DataJsonVo();
+		keyword2.setValue(thread.getUserName());//内容2
+		keyword2.setColor(msgColor);
+		data.setKeyword2(keyword2);
+		
+		DataJsonVo keyword3 = new DataJsonVo();
+		keyword3.setValue(pubUser.getTel());//内容3
+		keyword3.setColor(msgColor);
+		data.setKeyword3(keyword3);
+		
+		DataJsonVo keyword4 = new DataJsonVo();
+		keyword4.setValue(thread.getUserSectName());//内容4
+		keyword4.setColor(msgColor);
+		data.setKeyword4(keyword4);
+		
+		DataJsonVo remark = new DataJsonVo();
+		remark.setValue(msgRemark);//结尾
+		remark.setColor(msgColor);
+		data.setRemark(remark);
+		
+		msg.setData(data);
+		
+		TemplateMsgService.sendMsg(msg, accessToken);
+    }
+    
 }
