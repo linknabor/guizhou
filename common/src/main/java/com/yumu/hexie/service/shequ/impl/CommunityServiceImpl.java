@@ -9,6 +9,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,6 +26,7 @@ import com.yumu.hexie.model.community.ThreadComment;
 import com.yumu.hexie.model.community.ThreadCommentRepository;
 import com.yumu.hexie.model.community.ThreadRepository;
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.service.common.GotongService;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.CommunityService;
 
@@ -42,6 +44,9 @@ public class CommunityServiceImpl implements CommunityService {
 	
 	@Inject
 	private AnnoucementRepository annoucementRepository;
+	
+	@Autowired
+	private GotongService gotongService;
 	
 	@Override
 	public List<Thread> getThreadList(long userSectId, Pageable page) {
@@ -89,6 +94,7 @@ public class CommunityServiceImpl implements CommunityService {
 		thread.setUserSectName(user.getXiaoquName());
 		thread.setStickPriority("0");	//默认优先级0，为最低
 		threadRepository.save(thread);
+		gotongService.sendThreadPubNotify(user, thread);
 		
 		return thread;
 	}

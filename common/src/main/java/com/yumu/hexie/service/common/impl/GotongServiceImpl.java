@@ -24,6 +24,7 @@ import com.yumu.hexie.integration.wechat.entity.customer.NewsMessage;
 import com.yumu.hexie.integration.wechat.entity.customer.Template;
 import com.yumu.hexie.integration.wechat.service.CustomService;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
+import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.localservice.ServiceOperator;
 import com.yumu.hexie.model.localservice.ServiceOperatorRepository;
 import com.yumu.hexie.model.localservice.bill.YunXiyiBill;
@@ -61,6 +62,10 @@ public class GotongServiceImpl implements GotongService {
     public static String SUBSCRIBE_IMG = ConfigUtil.get("subscribeImage");
     
     public static String SUBSCRIBE_DETAIL = ConfigUtil.get("subscribeDetail");
+    
+    public static String TEMPLATE_NOTICE_URL = ConfigUtil.get("templateUrl");
+    
+    public static String TEMPLATE_NOTICE_ID = ConfigUtil.get("templateId");
     
     @Inject
     private ServiceOperatorRepository  serviceOperatorRepository;
@@ -178,4 +183,68 @@ public class GotongServiceImpl implements GotongService {
 		}
 		
     }
+    
+    /**
+     * 意见投诉发布后，通知管理人员
+     * @param user
+     * @param thread
+     */
+	@Override
+	public void sendThreadPubNotify(User user, Thread thread) {
+		
+		List<ServiceOperator> ops = serviceOperatorRepository.findBySectId(user.getSectId());
+		for (ServiceOperator serviceOperator : ops) {
+			sendThreadMsg(serviceOperator, thread, user);
+		}
+	}
+	
+    public void sendThreadMsg(ServiceOperator serviceOperator, Thread thread, User pubUser) {
+		
+    	String msgUrl = TEMPLATE_NOTICE_URL + thread.getThreadId();
+    	String msgTitle = "您好，您有新的消息";
+    	String msgRemark = "请点击查看具体信息";
+    	String msgColor = "#173177";
+    	
+		Template msg = new Template();
+    	msg.setTouser(serviceOperator.getOpenId());//openID
+    	msg.setUrl(msgUrl);//跳转地址
+    	msg.setTemplate_id(TEMPLATE_NOTICE_ID);//模板id
+    	
+		DataVo data = new DataVo();
+		DataJsonVo vo = new DataJsonVo();
+		vo.setValue(msgTitle); //标题
+		vo.setColor(msgColor);
+		data.setFirst(vo);
+		
+		DataJsonVo keyword1 = new DataJsonVo();
+		keyword1.setValue(String.valueOf(thread.getThreadId()));//内容1
+		keyword1.setColor(msgColor); 
+		data.setKeyword1(keyword1);
+		
+		DataJsonVo keyword2 = new DataJsonVo();
+		keyword2.setValue(thread.getUserName());//内容2
+		keyword2.setColor(msgColor);
+		data.setKeyword2(keyword2);
+		
+		DataJsonVo keyword3 = new DataJsonVo();
+		keyword3.setValue(pubUser.getTel());//内容3
+		keyword3.setColor(msgColor);
+		data.setKeyword3(keyword3);
+		
+		DataJsonVo keyword4 = new DataJsonVo();
+		keyword4.setValue(thread.getUserSectName());//内容4
+		keyword4.setColor(msgColor);
+		data.setKeyword4(keyword4);
+		
+		DataJsonVo remark = new DataJsonVo();
+		remark.setValue(msgRemark);//结尾
+		remark.setColor(msgColor);
+		data.setRemark(remark);
+		
+		msg.setData(data);
+		String accessToken = systemConfigService.queryWXAToken();
+		CustomService.sendCustomerMessage(msg, accessToken);
+    }
+	
+	
 }

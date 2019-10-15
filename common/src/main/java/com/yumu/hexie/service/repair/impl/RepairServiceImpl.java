@@ -11,8 +11,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,9 +36,9 @@ import com.yumu.hexie.model.localservice.repair.RepairProject;
 import com.yumu.hexie.model.localservice.repair.RepairProjectRepository;
 import com.yumu.hexie.model.localservice.repair.RepairSeed;
 import com.yumu.hexie.model.localservice.repair.RepairSeedRepository;
+import com.yumu.hexie.model.localservice.repair.ServiceOperatorSect;
 import com.yumu.hexie.model.localservice.repair.ServiceOperatorSectRepository;
 import com.yumu.hexie.model.localservice.repair.ServiceOperatorVo;
-import com.yumu.hexie.model.localservice.repair.ServiceOperatorSect;
 import com.yumu.hexie.model.market.ServiceOrder;
 import com.yumu.hexie.model.user.Address;
 import com.yumu.hexie.model.user.AddressRepository;
@@ -68,8 +66,6 @@ import com.yumu.hexie.vo.req.RepairOrderReq;
 @Service("repairService")
 public class RepairServiceImpl implements RepairService {
 	
-	private static final Logger log = LoggerFactory.getLogger(RepairServiceImpl.class);
-
     @Inject
     private RepairProjectRepository repairProjectRepository;
     @Inject
@@ -425,6 +421,7 @@ public class RepairServiceImpl implements RepairService {
 		String userId=vo.getUserId();
 		String id=vo.getId();
 		String cspName=vo.getCspName();
+		String opType = vo.getOperatorType();
 		if(StringUtil.isEmpty(cspName)){
 			cspName="";
 		}
@@ -446,6 +443,7 @@ public class RepairServiceImpl implements RepairService {
 			so.setUserId(u.getId());
 			so.setOpenId(u.getOpenid());
 			so.setCompanyName(vo.getCspName());
+			so.setOperatorType(opType);
 		}else{
 			so=serviceOperatorRepository.findOne(Long.valueOf(id));
 			so.setName(name);
