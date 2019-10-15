@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.yumu.hexie.common.util.TransactionUtil;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
@@ -465,12 +466,19 @@ public class WuyeServiceImpl implements WuyeService {
 		if (totalBind == null) {
 			totalBind = 0;
 		}
-		user.setTotalBind(totalBind+1);
+		if (!StringUtils.isEmpty(u.getTotal_bind())) {
+			totalBind = u.getTotal_bind();	//如果值不为空，说明是跑批程序返回回来的，直接取值即可，如果值是空，走下面的else累加即可
+		}else {
+			totalBind = totalBind+1;
+		}
+		
+		user.setTotalBind(totalBind);
 		user.setXiaoquName(u.getSect_name());
 		user.setProvince(u.getProvince_name());
 		user.setCity(u.getCity_name());
 		user.setCounty(u.getRegion_name());
 		user.setSectId(u.getSect_id());	
+		user.setSectName(u.getSect_name());
 		user.setCspId(u.getCsp_id());
 		user.setCellAddr(u.getCell_addr());
 		user.setCellId(u.getCell_id());

@@ -22,7 +22,6 @@ public class HexieUser implements Serializable {
 	
 	private String email_activie;
 	private String user_tel;
-	private String is_house;//房屋数
 	private String office_tel;//小区电话
 	private String cell_id;	//房屋ID
 	private String cell_addr;//房屋地址
@@ -38,6 +37,7 @@ public class HexieUser implements Serializable {
 	private String sect_id;//小区id
 	private String csp_id;//公司
 	private String center_id;//中心管理id
+	private Integer total_bind = 0;
 	
 	public String getSect_id() {
 		return sect_id;
@@ -147,12 +147,6 @@ public class HexieUser implements Serializable {
 	public void setUser_tel(String user_tel) {
 		this.user_tel = user_tel;
 	}
-	public String getIs_house() {
-		return is_house;
-	}
-	public void setIs_house(String is_house) {
-		this.is_house = is_house;
-	}
 	public String getOffice_tel() {
 		return office_tel;
 	}
@@ -170,6 +164,12 @@ public class HexieUser implements Serializable {
 	}
 	public void setCell_id(String cell_id) {
 		this.cell_id = cell_id;
+	}
+	public Integer getTotal_bind() {
+		return total_bind;
+	}
+	public void setTotal_bind(Integer total_bind) {
+		this.total_bind = total_bind;
 	}
 	
 }
