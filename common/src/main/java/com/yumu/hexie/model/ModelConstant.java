@@ -6,6 +6,8 @@ public class ModelConstant {
 	//消息类型
 	public static final int MESSAGE_GONGGAO = 0;
 	public static final int MESSAGE_ZIXUN = 1;
+	public static final int MESSAGE_STATUS_VALID = 0;
+	public static final int MESSAGE_STATUS_INVALID = 1;
 
 	//资讯子类型
 	public static final int MESSAGE_SUB_TYPE_HEATH = 1;
@@ -193,6 +195,7 @@ public class ModelConstant {
 	public static final int YUYUE_PRODUCT_TYPE_JIUYE = 10;//九曳
 	public static final int YUYUE_PRODUCT_TYPE_BAOJIE = 11;//保洁服务
 	public static final int YUYUE_PRODUCT_TYPE_AIXIANGBAN = 12;//爱相伴服务
+	public static final int YUYUE_PRODUCT_TYPE_HAOJIAAN = 13;//好家安
 	//增加服务类型
 	public static final int YUYUE_SERVICE_TYPE_CAR = 0;//汽车
 	public static final int YUYUE_SERVICE_TYPE_FLOWER = 1;//鲜花
@@ -289,4 +292,12 @@ public class ModelConstant {
 
 	public static final int COLLOCATION_STATUS_AVAILABLE = 1;
 	public static final int COLLOCATION_STATUS_INVAILID = 2;
+	
+	//评论或者投诉
+	public static final int HAOJIAAN_COMMPENT_STATUS_COMMENT = 1;//评论
+	public static final int HAOJIAAN_COMMPENT_STATUS_COMPLAIN = 2;//投诉
+	
+	public static final String PARA_TYPE_CSP = "2";
+
 }		
+

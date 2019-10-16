@@ -35,7 +35,7 @@ public class TransactionUtil<T> {
 			return true;
 		} catch (Exception e) {
 			transactionManager.rollback(status);
-			logger.error(e.toString());
+			logger.error(e.toString(),e);
 			return false;
 		}
 

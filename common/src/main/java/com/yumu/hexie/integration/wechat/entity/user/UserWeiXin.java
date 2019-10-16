@@ -179,4 +179,13 @@ public class UserWeiXin {
 		super();
 	}
 
+	@Override
+	public String toString() {
+		return "UserWeiXin [subscribe=" + subscribe + ", openid=" + openid + ", nickname=" + nickname + ", sex=" + sex
+				+ ", city=" + city + ", country=" + country + ", province=" + province + ", language=" + language
+				+ ", headimgurl=" + headimgurl + ", subscribe_time=" + subscribe_time + ", privilege=" + privilege
+				+ "]";
+	}
+	
+
 }

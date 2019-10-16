@@ -13,6 +13,10 @@ import com.yumu.hexie.common.util.ConfigUtil;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.JacksonJsonUtil;
 import com.yumu.hexie.integration.wechat.entity.common.WechatResponse;
+import com.yumu.hexie.integration.wechat.entity.customer.DataJsonVo;
+import com.yumu.hexie.integration.wechat.entity.customer.DataVo;
+import com.yumu.hexie.integration.wechat.entity.templatemsg.HaoJiaAnCommentVO;
+import com.yumu.hexie.integration.wechat.entity.templatemsg.HaoJiaAnOrderVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.PaySuccessVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.RegisterSuccessVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.RepairOrderVO;
@@ -21,7 +25,10 @@ import com.yumu.hexie.integration.wechat.entity.templatemsg.TemplateMsg;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.WuyePaySuccessVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.YuyueOrderVO;
 import com.yumu.hexie.integration.wechat.util.WeixinUtil;
+import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.localservice.ServiceOperator;
+import com.yumu.hexie.model.localservice.oldversion.thirdpartyorder.HaoJiaAnComment;
+import com.yumu.hexie.model.localservice.oldversion.thirdpartyorder.HaoJiaAnOrder;
 import com.yumu.hexie.model.localservice.repair.RepairOrder;
 import com.yumu.hexie.model.market.ServiceOrder;
 import com.yumu.hexie.model.user.User;
@@ -37,8 +44,9 @@ public class TemplateMsgService {
 	public static String REG_SUCCESS_MSG_TEMPLATE = ConfigUtil.get("registerSuccessTemplate");
 	public static String WUYE_PAY_SUCCESS_MSG_TEMPLATE = ConfigUtil.get("wuyePaySuccessTemplate");
 	public static String REPAIR_ASSIGN_TEMPLATE = ConfigUtil.get("reapirAssginTemplate");
-	
 	public static String YUYUE_ASSIGN_TEMPLATE = ConfigUtil.get("yuyueNoticeTemplate");
+	public static String COMPLAIN_TEMPLATE = ConfigUtil.get("complainTemplate");
+    public static String THREAD_PUB_URL = ConfigUtil.get("threadPubUrl");
 	
 	/**
 	 * 模板消息发送
@@ -179,5 +187,93 @@ public class TemplateMsgService {
         TemplateMsgService.sendMsg(msg, accessToken);
         
     }
+    
+    public static void sendHaoJiaAnAssignMsg(HaoJiaAnOrder hOrder, User user, String accessToken,String openId) {
+    	HaoJiaAnOrderVO vo = new HaoJiaAnOrderVO();
+    	vo.setTitle(new TemplateItem("有新的预约服务"));
+    	vo.setAppointmentDate(new TemplateItem(hOrder.getExpectedTime()));
+    	vo.setAppointmentContent(new TemplateItem(hOrder.getServiceTypeName()));
+    	vo.setAddress(new TemplateItem("预约地址：" + hOrder.getStrWorkAddr()+" "+hOrder.getStrName()+" "+(hOrder.getStrMobile()==null?"":hOrder.getStrMobile()+"\r\n"
+    			+"备注:"+(hOrder.getMemo()==null?"":hOrder.getMemo()))));
+    	log.error("预约服务的userId="+user.getId()+"");
+    	log.error("预约服务的user="+user+""); 	
+    	
+    	TemplateMsg<HaoJiaAnOrderVO> msg = new TemplateMsg<HaoJiaAnOrderVO>();
+    	msg.setData(vo);
+    	msg.setTemplate_id(YUYUE_ASSIGN_TEMPLATE);
+    	String url = GotongServiceImpl.YUYUE_NOTICE + hOrder.getyOrderId();
+    	msg.setUrl(url);
+    	msg.setTouser(openId);
+    	TemplateMsgService.sendMsg(msg, accessToken);
+    }
+    
+  //投诉模板，发送给商家
+    public static void sendHaoJiaAnCommentMsg(HaoJiaAnComment comment, User user, String accessToken,String openId) {
+    	log.error("sendHaoJiaAnCommentMsg的用户电话="+comment.getCommentUserTel());
+    	HaoJiaAnCommentVO vo = new HaoJiaAnCommentVO();
+    	vo.setTitle(new TemplateItem("用户投诉"));//标题
+    	vo.setUserName(new TemplateItem(comment.getCommentUserName()));//用户姓名
+    	vo.setUserTel(new TemplateItem(comment.getCommentUserTel()));//用户电话
+    	vo.setReason(new TemplateItem(comment.getCommentContent()));//投诉事由
+    	vo.setOrderNo(new TemplateItem(comment.getYuyueOrderNo()));;//订单编号
+    	vo.setMemo(new TemplateItem("用户对您的服务有投诉，请尽快联系用户处理。"));//备注（固定内容）
+    	log.error("投诉的userId="+user.getId()+"");
+    	log.error("投诉的user="+user+""); 
+    	TemplateMsg<HaoJiaAnCommentVO> msg = new TemplateMsg<HaoJiaAnCommentVO>();
+    	msg.setData(vo);
+    	msg.setTemplate_id(COMPLAIN_TEMPLATE);
+    	msg.setUrl(GotongServiceImpl.COMPLAIN_DETAIL + comment.getId());
+    	msg.setTouser(openId);
+    	
+    	TemplateMsgService.sendMsg(msg, accessToken);
+    }
 
+    public static void sendPubThreadMsg(ServiceOperator serviceOperator, Thread thread, User pubUser, String accessToken) {
+    	
+    	String msgUrl = THREAD_PUB_URL + thread.getThreadId();
+    	String msgTitle = "您好，您有新的消息";
+    	String msgRemark = "请点击查看具体信息";
+    	String msgColor = "#173177";
+    	
+		TemplateMsg<DataVo> msg = new TemplateMsg<>();
+    	msg.setTouser(serviceOperator.getOpenId());//openID
+    	msg.setUrl(msgUrl);//跳转地址
+    	msg.setTemplate_id(REPAIR_ASSIGN_TEMPLATE);//模板id
+    	
+		DataVo data = new DataVo();
+		DataJsonVo vo = new DataJsonVo();
+		vo.setValue(msgTitle); //标题
+		vo.setColor(msgColor);
+		data.setFirst(vo);
+		
+		DataJsonVo keyword1 = new DataJsonVo();
+		keyword1.setValue(String.valueOf(thread.getThreadId()));//内容1
+		keyword1.setColor(msgColor); 
+		data.setKeyword1(keyword1);
+		
+		DataJsonVo keyword2 = new DataJsonVo();
+		keyword2.setValue(thread.getUserName());//内容2
+		keyword2.setColor(msgColor);
+		data.setKeyword2(keyword2);
+		
+		DataJsonVo keyword3 = new DataJsonVo();
+		keyword3.setValue(pubUser.getTel());//内容3
+		keyword3.setColor(msgColor);
+		data.setKeyword3(keyword3);
+		
+		DataJsonVo keyword4 = new DataJsonVo();
+		keyword4.setValue(thread.getUserSectName());//内容4
+		keyword4.setColor(msgColor);
+		data.setKeyword4(keyword4);
+		
+		DataJsonVo remark = new DataJsonVo();
+		remark.setValue(msgRemark);//结尾
+		remark.setColor(msgColor);
+		data.setRemark(remark);
+		
+		msg.setData(data);
+		
+		TemplateMsgService.sendMsg(msg, accessToken);
+    }
+    
 }

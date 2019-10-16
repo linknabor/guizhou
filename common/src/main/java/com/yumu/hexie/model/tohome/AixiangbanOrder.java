@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 import com.yumu.hexie.model.BaseModel;
 
 /** 
- * <p>项目：东湖e家园</p>
+ * <p>项目：合协社区</p>
  * <p>模块：爱相伴服务</p>
  * <p>描述：</p>
  * <p>版    权: Copyright (c) 2016</p>

@@ -15,36 +15,74 @@ import java.io.Serializable;
  * @version $Id: AddressReq.java, v 0.1 2016年5月23日 下午2:56:00  Exp $
  */
 public class AddressReq implements Serializable {
+    private static final long serialVersionUID = 4808669460780339640L;
+    private Long amapId;//高德地图中的_id 没有初始化时为空，若空则需要生成一条记录
+    private String amapDetailAddr;//小区的地址，对应高德地图中detailAddr
     
-	private static final long serialVersionUID = -3522389483000401026L;
-	
-	private Long addrId;
+    private Long id;
+    private long countyId;
     private long xiaoquId;
+    private String xiaoquName;
+
+    private long userId;
+    private String receiveName;
+    private String detailAddress;
     private String tel;
-    private String name;
-    private String detailAddr;
-	private boolean main;//是否是默认地址
-    
-
-
-
-	public String getName() {
-        return name;
+    private boolean main;//是否是默认地址
+    public Long getAmapId() {
+        return amapId;
     }
-    public void setName(String name) {
-        this.name = name;
+    public void setAmapId(Long amapId) {
+        this.amapId = amapId;
     }
-    public String getDetailAddr() {
-        return detailAddr;
+    public String getAmapDetailAddr() {
+        return amapDetailAddr;
     }
-    public void setDetailAddr(String detailAddr) {
-        this.detailAddr = detailAddr;
+    public void setAmapDetailAddr(String amapDetailAddr) {
+        this.amapDetailAddr = amapDetailAddr;
     }
-    public Long getAddrId() {
-        return addrId;
+    public Long getId() {
+        if(id == null) return 0l;
+        return id;
     }
-    public void setAddrId(Long addrId) {
-        this.addrId = addrId;
+    public void setId(Long id) {
+        this.id = id;
+    }
+    public long getCountyId() {
+        return countyId;
+    }
+    public void setCountyId(long countyId) {
+        this.countyId = countyId;
+    }
+    public long getXiaoquId() {
+        return xiaoquId;
+    }
+    public void setXiaoquId(long xiaoquId) {
+        this.xiaoquId = xiaoquId;
+    }
+    public String getXiaoquName() {
+        return xiaoquName;
+    }
+    public void setXiaoquName(String xiaoquName) {
+        this.xiaoquName = xiaoquName;
+    }
+    public long getUserId() {
+        return userId;
+    }
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
+    public String getReceiveName() {
+        return receiveName;
+    }
+    public void setReceiveName(String receiveName) {
+        this.receiveName = receiveName;
+    }
+    public String getDetailAddress() {
+        return detailAddress;
+    }
+    public void setDetailAddress(String detailAddress) {
+        this.detailAddress = detailAddress;
     }
     public String getTel() {
         return tel;
@@ -52,14 +90,7 @@ public class AddressReq implements Serializable {
     public void setTel(String tel) {
         this.tel = tel;
     }
-   
-    public long getXiaoquId() {
-		return xiaoquId;
-	}
-	public void setXiaoquId(long xiaoquId) {
-		this.xiaoquId = xiaoquId;
-	}
-	public boolean isMain() {
+    public boolean isMain() {
         return main;
     }
     public void setMain(boolean main) {

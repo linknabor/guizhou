@@ -10,13 +10,13 @@ public class Message extends BaseModel{
 
 	private static final long serialVersionUID = 4808669460780339640L;
 	
-	private int msgType;	//资讯类型  0. 健康类、1.文化娱乐类、2.城市社区时事、3.教育类、4.居家生活类、5.母婴、6.汽车、7.其他
+	private int msgType;	//资讯类型  0.物业公告, 1.业委会公告, 2.居委会公告, 3.便民信息, 9.全局资讯
 	private String title;	//资讯抬头
 	private String summary;	//资讯摘要	
 	private String content;	//资讯内容
 	private String fromSite;	//来自网站
 	private int regionType;	//区域类型 （0.全部 1.省 2. 市 3. 县  4.小区）
-	private String regionId;	//区域ID
+	private long regionId;	//区域ID
 	private String publishDate;	//发布日期
 	private int status;	//0正常 1失效
 	private boolean top;	//是否置顶
@@ -57,11 +57,11 @@ public class Message extends BaseModel{
 		this.regionType = regionType;
 	}
 
-	public String getRegionId() {
+	public long getRegionId() {
 		return regionId;
 	}
 
-	public void setRegionId(String regionId) {
+	public void setRegionId(long regionId) {
 		this.regionId = regionId;
 	}
 

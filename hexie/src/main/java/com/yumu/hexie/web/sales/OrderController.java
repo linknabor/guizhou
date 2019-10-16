@@ -24,6 +24,7 @@ import com.yumu.hexie.model.market.ServiceOrderRepository;
 import com.yumu.hexie.model.market.saleplan.SalePlan;
 import com.yumu.hexie.model.redis.Keys;
 import com.yumu.hexie.model.redis.RedisRepository;
+import com.yumu.hexie.model.user.Address;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.sales.BaseOrderService;
 import com.yumu.hexie.service.sales.ProductService;
@@ -176,7 +177,16 @@ public class OrderController extends BaseController{
 		BuyInfoVO vo = new BuyInfoVO();
 		vo.setRule(sp);
 		vo.setProduct(productService.getProduct(sp.getProductId()));
-		vo.setAddress(addressService.queryDefaultAddress(user));
+		
+		List<Address> addrList = addressService.getAddressByMain(user.getId(), true);
+		Address address = new Address();
+		if (addrList == null || addrList.size() == 0) {
+			addrList = addressService.queryAddressByUser(user.getId());
+		}
+		if (addrList!=null && addrList.size()>0) {
+			address = addrList.get(0);
+		}
+		vo.setAddress(address);
 		return new BaseResult<BuyInfoVO>().success(vo);
     }
 	

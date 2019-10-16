@@ -21,6 +21,7 @@ import com.yumu.hexie.model.commonsupport.comment.Comment;
 import com.yumu.hexie.model.commonsupport.comment.CommentConstant;
 import com.yumu.hexie.model.commonsupport.info.Product;
 import com.yumu.hexie.model.localservice.repair.RepairOrder;
+import com.yumu.hexie.model.localservice.repair.RepairOrderRepository;
 import com.yumu.hexie.model.market.Cart;
 import com.yumu.hexie.model.market.OrderItem;
 import com.yumu.hexie.model.market.OrderItemRepository;
@@ -70,6 +71,8 @@ public class BaseOrderServiceImpl extends BaseOrderProcessor implements BaseOrde
 	protected WechatCoreService wechatCoreService;
 	@Inject
 	protected ShareService shareService;
+	@Inject
+	protected RepairOrderRepository repairOrderRepository;
 	
 	@Inject
 	private SalePlanService salePlanService;
@@ -129,6 +132,9 @@ public class BaseOrderServiceImpl extends BaseOrderProcessor implements BaseOrde
 
         sOrder.setPrice(amount);
         sOrder = serviceOrderRepository.save(sOrder);
+        
+        order.setOrderId(sOrder.getId());
+        repairOrderRepository.save(order);
 
         item.setServiceOrder(sOrder);
         item.setAmount(amount*1f);
@@ -177,6 +183,7 @@ public class BaseOrderServiceImpl extends BaseOrderProcessor implements BaseOrde
 	protected void commonPostProcess(int orderOp, ServiceOrder order) {
 
 		log.error("commonPostProcess" + order.getOrderNo());
+		User user = userService.getById(order.getUserId());//短信发送号码修改为用户注册号码 2016012
 		if(orderOp==ModelConstant.ORDER_OP_CREATE){
 			log.error("shareService.record" + order.getOrderNo());
 			shareService.record(order);
@@ -186,7 +193,6 @@ public class BaseOrderServiceImpl extends BaseOrderProcessor implements BaseOrde
 		} else if(orderOp == ModelConstant.ORDER_OP_UPDATE_PAYSTATUS
 				&&(order.getStatus()==ModelConstant.ORDER_STATUS_PAYED||order.getStatus()==ModelConstant.ORDER_STATUS_CONFIRM)){
 			if(order.getOrderType() != ModelConstant.ORDER_TYPE_YUYUE){
-				User user = userService.getById(order.getUserId());//短信发送号码修改为用户注册号码 20160120
 				userNoticeService.orderSuccess(order.getUserId(), user.getTel(),order.getId(), order.getOrderNo(), order.getProductName(), order.getPrice());
 			}
 			String token = systemconfigservice.queryWXAToken();

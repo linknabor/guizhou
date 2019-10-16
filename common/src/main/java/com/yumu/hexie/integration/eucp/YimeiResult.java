@@ -22,11 +22,4 @@ public class YimeiResult implements Serializable {
 	public boolean isSuccess(){
 		return error == 0;
 	}
-	@Override
-	public String toString() {
-		
-		return "error: " + error + ", message: " + message;
-	}
-	
-	
 }

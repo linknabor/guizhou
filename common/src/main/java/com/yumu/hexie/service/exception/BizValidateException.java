@@ -26,6 +26,10 @@ public class BizValidateException extends RuntimeException {
 	public BizValidateException(String msg){
 		this.message = msg;
 	}
+	public BizValidateException(String msg, Throwable cause){
+		super(msg, cause);
+		this.message = msg;
+	}
 	private String message;
 
 	public String getMessage() {

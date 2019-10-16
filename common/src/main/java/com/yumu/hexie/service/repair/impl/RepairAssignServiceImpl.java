@@ -59,7 +59,7 @@ public class RepairAssignServiceImpl implements RepairAssignService {
     @Override
     public void assignOrder(RepairOrder order) {
         Address address = addressRepository.findOne(order.getAddressId());
-        List<ServiceOperator> ops = null;
+/*        List<ServiceOperator> ops = null;
         List<Long> regionIds = new ArrayList<Long>();
         regionIds.add(1l);
         regionIds.add(address.getProvinceId());
@@ -76,7 +76,8 @@ public class RepairAssignServiceImpl implements RepairAssignService {
 //                new PageRequest(0, 2));
             //业务判断-通知下单失败
         }
-        
+        */
+        List<ServiceOperator> ops=serviceOperatorRepository.findBySectId(order.getSectId());
         assign(address,order, ops);
     }
     private void assign(Address address,RepairOrder ro, List<ServiceOperator> ops) {

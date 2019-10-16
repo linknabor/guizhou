@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.yumu.hexie.common.util.StringUtil;
@@ -12,6 +13,8 @@ import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.model.ModelConstant;
+import com.yumu.hexie.model.user.TempUser;
+import com.yumu.hexie.model.user.TempUserRepository;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.model.user.UserRepository;
 import com.yumu.hexie.service.common.WechatCoreService;
@@ -21,7 +24,7 @@ import com.yumu.hexie.service.user.UserService;
 
 @Service("userService")
 public class UserServiceImpl implements UserService {
-
+	
 	@Inject
 	private UserRepository userRepository;
 
@@ -37,7 +40,8 @@ public class UserServiceImpl implements UserService {
     public List<User> getByOpenId(String openId){
         return userRepository.findByOpenid(openId);
     }
-	@Override
+    
+    @Override
 	public User getOrSubscibeUserByCode(String code) {
 		UserWeiXin user = wechatCoreService.getByOAuthAccessToken(code);
 		if(user == null) {
@@ -68,6 +72,7 @@ public class UserServiceImpl implements UserService {
         }
 		return userAccount;
 	}
+	
 	private User createUser(UserWeiXin user) {
 		User userAccount;
 		userAccount = new User();
@@ -85,6 +90,7 @@ public class UserServiceImpl implements UserService {
 		userAccount = userRepository.save(userAccount);
 		return userAccount;
 	}
+	
     private User updateSubscribeInfo(UserWeiXin user, User userAccount) {
         userAccount.setSubscribe(user.getSubscribe());
         userAccount.setSubscribe_time(user.getSubscribe_time());
@@ -133,13 +139,7 @@ public class UserServiceImpl implements UserService {
 		pointService.addZhima(user, 100, "zm-binding-"+user.getId());
 		return userRepository.save(user);
 	}
-//	@Override
-//	public void syncUsersFromWechat() {
-//		List<UserWeiXin> us = wechatCoreService.getUserList();
-//		for(UserWeiXin u : us) {
-//			getOrSubscibeUserByOpenId(u);
-//		}
-//	}
+
 	@Override
 	public UserWeiXin getOrSubscibeUserByOpenId(String openid) {
 
@@ -166,13 +166,43 @@ public class UserServiceImpl implements UserService {
         return users.size() > 0 ? users.get(0) : null;
     }
 	@Override
-	public String getBindOrSubscibeUserOpenIdByCode(String code) {
-		
-		String openid = wechatCoreService.getBindOpenId(code);
-		if(StringUtil.isEmpty(openid)) {
-            throw new BizValidateException("微信信息不正确");
-        }
-		return openid;
+	public List<User> getBindHouseUser(int pageNum,int pageSize) {
+		return userRepository.getBindHouseUser(pageNum,pageSize);
 	}
+	
+	@Autowired
+	private TempUserRepository tempUserRepository;
+	
+	@Override
+	public List<TempUser> getTempUser() {
 
+		return tempUserRepository.findAll();
+	}
+	@Override
+	public List<User> getByTel(String tel) {
+		return userRepository.findByTel(tel);
+	}
+	@Override
+	public List<TempUser> getTemp() {
+	
+		
+		return tempUserRepository.findBySectid("161223100120926240");
+	}
+	@Override
+	public List<String> getRepeatShareCodeUser() {
+		
+		return userRepository.getRepeatShareCodeUser();
+	}
+	@Override
+	public List<User> getShareCodeIsNull() {
+		
+		return userRepository.getShareCodeIsNull();
+	}
+	@Override
+	public List<User> getUserByShareCode(String shareCode) {
+		return userRepository.getUserByShareCode(shareCode);
+	}
+	
+	
+   
 }

@@ -30,10 +30,11 @@ public class ServiceOperator  extends BaseModel {
     private long userId;
     
 
-    private Long regionId;//东湖e家园区域ID
+    private Long regionId;//合协社区区域ID
     private boolean fromWuye = false;
     private double longitude;
     private double latitude;
+    private String operatorType;
     
     public String getCompanyName() {
         return companyName;
@@ -95,5 +96,12 @@ public class ServiceOperator  extends BaseModel {
     public void setType(int type) {
         this.type = type;
     }
+	public String getOperatorType() {
+		return operatorType;
+	}
+	public void setOperatorType(String operatorType) {
+		this.operatorType = operatorType;
+	}
+    
     
 }

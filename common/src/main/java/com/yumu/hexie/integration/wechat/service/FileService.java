@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yumu.hexie.integration.wechat.entity.common.WechatResponse;
 import com.yumu.hexie.integration.wechat.util.WechatConfig;
+import com.yumu.hexie.integration.wechat.util.WeixinUtil;
 import com.yumu.hexie.service.exception.BizValidateException;
 
 /**
@@ -54,10 +55,10 @@ public class FileService {
 	 *            文件路径
 	 * @return json
 	 */
-	public static WechatResponse uploadFile(String fileType, String filename, String filePath, String accessToken) {
+	public static WechatResponse uploadFile(String fileType, String filename, String filePath) {
 
 		String requestUrl = uploadFileUrl.replace("ACCESS_TOKEN",
-				accessToken).replace("TYPE", fileType);
+				WeixinUtil.getToken()).replace("TYPE", fileType);
 		File file = new File(filePath);
 		String result = "";
 		String end = "\r\n";
@@ -120,7 +121,7 @@ public class FileService {
 	 * 下载文件
 	 * @param mediaId
 	 */
-	public static InputStream downloadFile(String mediaId, String accessToken){
+	public static InputStream downloadFile(String mediaId,String accessToken){
 		
 		String requestUrl = dwonloadFileURL.replace("ACCESS_TOKEN", accessToken).replace("MEDIA_ID", mediaId);
 		try {

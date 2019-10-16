@@ -65,15 +65,6 @@ public class WechatController extends BaseController{
     }
     
     @ResponseBody
-    @RequestMapping(value = "/checkSignature", method = RequestMethod.POST,produces="text/plain;charset=UTF-8" )
-    public String process(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
-    	request.setCharacterEncoding("UTF-8");
-    	response.setCharacterEncoding("UTF-8");
-    	return wechatCoreService.processWebchatRequest(request);
-    }
-
-    @ResponseBody
     @RequestMapping(value = "/orderNotify", method = RequestMethod.POST,produces="text/plain;charset=UTF-8" )
     public String orderNotify(PaymentOrderResult paymentOrderResult) throws Exception {
     	LOGGER.error("orderNotify:（"+paymentOrderResult.isSuccess()+"）" + JacksonJsonUtil.beanToJson(paymentOrderResult));

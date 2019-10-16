@@ -117,6 +117,7 @@ public class WebConfig extends WebMvcConfigurationSupport {
     public HandlerInterceptor checkUserInterceptor(){
     	return new CheckUserAddedInterceptor();
     }
+    
     @Bean(name = "mapper")
     public ObjectMapper mapper() {
         return new ObjectMapper();

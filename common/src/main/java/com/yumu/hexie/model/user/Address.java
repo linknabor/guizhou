@@ -3,8 +3,7 @@ package com.yumu.hexie.model.user;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
-import org.springframework.beans.BeanUtils;
-
+import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.model.BaseModel;
 import com.yumu.hexie.model.distribution.region.AmapAddress;
 
@@ -26,6 +25,7 @@ public class Address  extends BaseModel{
 	
 	private long xiaoquId;
 	private String xiaoquName;
+	private String xiaoquAddress;
 
 	private double longitude;
     private double latitude;
@@ -37,13 +37,6 @@ public class Address  extends BaseModel{
 	private String tel;
 	private boolean main;//是否是默认地址
 	
-	private long xiaoquEntId;//小区表对应的ID
-	private String xiaoquAddr;
-	
-	public void initXiaoqu(Xiaoqu xiaoqu) {
-        setXiaoquEntId(xiaoqu.getId());
-	    BeanUtils.copyProperties(xiaoqu, this, "id","createDate");
-	}
 	public void initAmapInfo(AmapAddress amapAddr){
 	    setAmapId(amapAddr.getId());
         setLongitude(amapAddr.getLon()); 
@@ -54,10 +47,13 @@ public class Address  extends BaseModel{
 	@Transient
 	public String getRegionStr(){
 		String province = getProvince();
-		if(getProvince().indexOf("上海")>=0
-				||getProvince().indexOf("北京")>=0
-				||getProvince().indexOf("重庆")>=0
-				||getProvince().indexOf("天津")>=0){
+		if (StringUtil.isEmpty(province)) {
+			province = "";
+		}
+		if(province.indexOf("上海")>=0
+				||province.indexOf("北京")>=0
+				||province.indexOf("重庆")>=0
+				||province.indexOf("天津")>=0){
 			province = "";
 		}
 		return province+getCity()+ getCounty()+getXiaoquName();
@@ -171,17 +167,13 @@ public class Address  extends BaseModel{
 	public void setAmapDetailAddr(String amapDetailAddr) {
 		this.amapDetailAddr = amapDetailAddr;
 	}
-    public long getXiaoquEntId() {
-        return xiaoquEntId;
-    }
-    public void setXiaoquEntId(long xiaoquEntId) {
-        this.xiaoquEntId = xiaoquEntId;
-    }
-    public String getXiaoquAddr() {
-        return xiaoquAddr;
-    }
-    public void setXiaoquAddr(String xiaoquAddr) {
-        this.xiaoquAddr = xiaoquAddr;
-    }
+
+	public String getXiaoquAddress() {
+		return xiaoquAddress;
+	}
+
+	public void setXiaoquAddress(String xiaoquAddress) {
+		this.xiaoquAddress = xiaoquAddress;
+	}
 	
 }
