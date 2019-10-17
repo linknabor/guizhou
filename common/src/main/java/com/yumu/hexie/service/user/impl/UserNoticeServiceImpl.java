@@ -9,12 +9,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.yumu.hexie.model.ModelConstant;
-import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.model.user.UserNotice;
 import com.yumu.hexie.model.user.UserNoticeRepository;
 import com.yumu.hexie.service.common.SmsService;
+import com.yumu.hexie.service.common.SystemConfigService;
 import com.yumu.hexie.service.user.UserNoticeService;
-import com.yumu.hexie.service.user.UserService;
 
 @Service("userNoticeService")
 public class UserNoticeServiceImpl implements UserNoticeService {
@@ -24,7 +23,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 	@Inject
 	protected SmsService smsService;
 	@Autowired
-	private UserService userService;
+	private SystemConfigService systemConfigService;
 	
 
 	@Override
@@ -42,7 +41,8 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 	}
 	@Override
 	public void orderSuccess(long userId, String tel,long orderId, String orderNo, String productName, float prices) {
-		String msg = "您好，您购买的"+productName+"已支付成功，支付总额" + prices + "元,关注微信号“合协社区”,了解更多订单信息。";
+		String defaultSign = systemConfigService.queryValueByKey("DEFAULT_SIGN"); 
+		String msg = "您好，您购买的"+productName+"已支付成功，支付总额" + prices + "元,关注微信号“"+ defaultSign +"”,了解更多订单信息。";
 		userNoticeRepository.save(new UserNotice(userId, ModelConstant.NOTICE_TYPE_ORDER, ModelConstant.NOTICE_SUB_TYPE_ORDERSUCCESS,
 				msg, orderId));
 		smsService.sendMsg(userId, tel, msg, getKey(userId,orderId,1));
