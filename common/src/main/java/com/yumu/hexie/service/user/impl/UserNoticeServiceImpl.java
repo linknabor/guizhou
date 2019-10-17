@@ -4,14 +4,17 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.yumu.hexie.model.ModelConstant;
+import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.model.user.UserNotice;
 import com.yumu.hexie.model.user.UserNoticeRepository;
 import com.yumu.hexie.service.common.SmsService;
 import com.yumu.hexie.service.user.UserNoticeService;
+import com.yumu.hexie.service.user.UserService;
 
 @Service("userNoticeService")
 public class UserNoticeServiceImpl implements UserNoticeService {
@@ -20,6 +23,9 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 	private UserNoticeRepository userNoticeRepository;
 	@Inject
 	protected SmsService smsService;
+	@Autowired
+	private UserService userService;
+	
 
 	@Override
 	public List<UserNotice> queryByUserId(long userId,Pageable page) {
@@ -36,7 +42,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 	}
 	@Override
 	public void orderSuccess(long userId, String tel,long orderId, String orderNo, String productName, float prices) {
-		String msg = "您好，您购买的"+productName+"已支付成功，支付总额" + prices + "元,关注微信号“东湖e家园”,了解更多订单信息。";
+		String msg = "您好，您购买的"+productName+"已支付成功，支付总额" + prices + "元,关注微信号“合协社区”,了解更多订单信息。";
 		userNoticeRepository.save(new UserNotice(userId, ModelConstant.NOTICE_TYPE_ORDER, ModelConstant.NOTICE_SUB_TYPE_ORDERSUCCESS,
 				msg, orderId));
 		smsService.sendMsg(userId, tel, msg, getKey(userId,orderId,1));
@@ -80,12 +86,12 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 	}
 
 	@Override
-	public void yuyueSuccess(long userId,String tel, String userName, long yuyueId, String serviceName, int paymentType, float prices) {
+	public void yuyueSuccess(long userId, String tel, String userName, long yuyueId, String serviceName, int paymentType, float prices) {
 		String msg;
 		if(paymentType != ModelConstant.YUYUE_PAYMENT_TYPE_OFFLINE){
-			msg ="您好，您预约的"+serviceName + "已成功支付" + prices + "元。我们将尽快为您发货或服务，感谢您的信任。关注微信公众号“东湖e家园”，了解更多服务信息";
+			msg ="您好，您预约的"+serviceName + "已成功支付" + prices + "元。我们将尽快为您发货或服务，感谢您的信任。关注微信公众号“合协社区”，了解更多服务信息";
 		}else{
-			msg ="您好，您的"+serviceName+"服务已成功预约，感谢您的信任。关注微信公众号“东湖e家园”，了解更多服务信息";
+			msg ="您好，您的"+serviceName+"服务已成功预约，感谢您的信任。关注微信公众号“合协社区”，了解更多服务信息";
 		}
 
 		userNoticeRepository.save(new UserNotice(userId, ModelConstant.NOTICE_TYPE_YUYUE, 1,

@@ -4,6 +4,8 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -17,6 +19,8 @@ import com.yumu.hexie.service.user.UserService;
  * @author Administrator
  */
 public class CheckUserAddedInterceptor implements HandlerInterceptor {
+	
+	private Logger logger =  LoggerFactory.getLogger(CheckUserAddedInterceptor.class); 
 
 	@Inject
 	private UserService userService;
@@ -30,6 +34,7 @@ public class CheckUserAddedInterceptor implements HandlerInterceptor {
 				if(request.getRequestURI().indexOf("login") >= 0) {
 					return true;
 				} else {
+					logger.info("requeste uri : " + request.getRequestURI());
 					User userAccount = userService.getOrSubscibeUserByCode(code);
 					request.getSession().setAttribute(Constants.USER, userAccount);
 				}

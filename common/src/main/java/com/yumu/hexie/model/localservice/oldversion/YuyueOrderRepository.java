@@ -10,4 +10,7 @@ public interface YuyueOrderRepository extends JpaRepository<YuyueOrder, Long> {
 	public List<YuyueOrder> findAllByUserId(long userId, Sort sort);
 
 	public YuyueOrder findByServiceOrderId(long serviceOrderId);
+	
+	//jpa查询规范之根据订单号查询订单
+	public YuyueOrder findByOrderNo(String orderNo);
 }

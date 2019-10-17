@@ -5,30 +5,35 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.yumu.hexie.common.util.StringUtil;
+import com.yumu.hexie.integration.wuye.vo.BaseRequestDTO;
+import com.yumu.hexie.model.ModelConstant;
 import com.yumu.hexie.model.community.Message;
 import com.yumu.hexie.model.community.MessageRepository;
-import com.yumu.hexie.model.community.RegionInfo;
-import com.yumu.hexie.model.community.RegionInfoRepository;
+import com.yumu.hexie.model.community.MessageSect;
+import com.yumu.hexie.model.community.MessageSectRepository;
 import com.yumu.hexie.model.user.Feedback;
 import com.yumu.hexie.model.user.FeedbackRepository;
+import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.user.MessageService;
 
 @Service(value = "messageService")
 public class MessageServiceImpl implements MessageService {
-	private static final Logger log = LoggerFactory.getLogger(MessageServiceImpl.class);
+
 
 	@Inject
 	private MessageRepository messageRepository;
 	@Inject
-	private RegionInfoRepository regionInfoRepository;
-	@Inject
 	private FeedbackRepository feedbackRepository;
+	@Autowired
+	private MessageSectRepository messageSectRepository;
+	
 	@Override
 	public List<Message> queryMessages(int type, long provinceId, long cityId,
 			long countyId, long xiaoquId,int page, int pageSize) {
@@ -38,50 +43,9 @@ public class MessageServiceImpl implements MessageService {
 	}
 	
 	@Override
-	public List<Message> queryMessages(String sect_id, int msgType, int page, int pageSize){
+	public List<Message> queryMessages(int page, int pageSize){
 		
-		List<String> list = new ArrayList<String>();
-		List<RegionInfo> regions = null;
-		//1.判断用户是否绑定房屋
-		if(!StringUtil.isEmpty(sect_id) && !"0".equals(sect_id))//绑定了房屋
-		{
-			regions = regionInfoRepository.findAllByRegionType(sect_id);
-			if(regions.size()!=0)
-			{
-				RegionInfo region = regions.get(0);
-				saveList(list, region.getSect_id());
-				saveList(list, region.getSuper_regionId());
-				saveList(list, region.getSuper_regionId2());
-				saveList(list, region.getSuper_regionId3());
-			}
-		}else//未绑定房屋，只能查看平台级用户
-		{
-			regions = regionInfoRepository.queryRegionInfoByRegionType();
-			if(regions.size()!=0)
-			{
-				for (int i = 0; i < regions.size(); i++) {
-					RegionInfo r = regions.get(i);
-					saveList(list, r.getSect_id());
-				}
-			}
-		}
-		
-		if(list.size()>0)
-		{
-			return messageRepository.queryMessagesByStatus(msgType, list, new PageRequest(page,pageSize));
-		}else
-		{
-			return null;
-		}
-		
-	}
-	
-	public void saveList(List<String> list,String id)
-	{
-		if(!StringUtil.isEmpty(id) && !"0".equals(id))
-		{
-			list.add(id);
-		}
+		return messageRepository.queryMessagesByStatus(new PageRequest(page,pageSize));
 	}
 	
 	@Override
@@ -98,18 +62,82 @@ public class MessageServiceImpl implements MessageService {
 		return feedbackRepository.findAllByArticleId(messageId, new PageRequest(page,pageSize));
 	}
 
+	/**
+	 * 管理端查询首页
+	 */
 	@Override
-	public Message findOneByregionId(int msgType, String regionId, boolean type) {
-		if(type)
-		{
-			return messageRepository.queryMessagesByReginId(msgType, regionId);
-		}else
-		{
-			List<RegionInfo> regions = regionInfoRepository.queryRegionInfoByRegionType();
-			log.debug(">>>>>>>>>>>>>>>>>>>>"+regions);
-			log.debug(">>>>>>>>>>>>>>>>>>>>"+regions.get(0).getSect_id());
-			return messageRepository.queryMessagesByReginId(msgType, regions.get(0).getSect_id());
+	public Page<Message> queryMessages(BaseRequestDTO<Message> baseRequestDTO) {
+
+		List<String> sectList = baseRequestDTO.getSectList();
+		Pageable pageable = new PageRequest(baseRequestDTO.getCurr_page(), baseRequestDTO.getPage_size());
+		Message message = baseRequestDTO.getData();
+		Page<Message> page = messageRepository.queryMessageMutipleCons(ModelConstant.MESSAGE_STATUS_VALID, message.getId(), message.getTitle(), 
+				baseRequestDTO.getBeginDate(), baseRequestDTO.getEndDate(), sectList, pageable);
+		
+		return page;
+	
+	}
+
+	/**
+	 * 新增/保存公告
+	 */
+	@Transactional
+	@Override
+	public void saveMessage(BaseRequestDTO<Message> baseRequestDTO) {
+
+		Message message = baseRequestDTO.getData();
+		message = messageRepository.save(message);
+		List<MessageSect> list = messageSectRepository.findByMessageId(message.getId());
+		for (MessageSect messageSect : list) {
+			messageSectRepository.delete(messageSect);
+		}
+		
+		List<String> sectIds = baseRequestDTO.getSectList();
+		for (String sectId : sectIds) {
+			MessageSect messageSect = new MessageSect();
+			messageSect.setMessageId(message.getId());
+			messageSect.setSectId(Long.valueOf(sectId));
+			messageSectRepository.save(messageSect);
 		}
 	}
+
+	@Override
+	public List<MessageSect> queryMessageSectList(Long messageId) {
+
+		return messageSectRepository.findByMessageId(messageId);
+	}
+
+	/**
+	 * 移动端物业首页公告、资讯查询
+	 */
+	@Override
+	public List<Message> queryMessagesByUserAndType(User user, int msgType, int page, int pageSize) {
+
+		List<Message> messageList = new ArrayList<Message>();
+		Pageable pageable = new PageRequest(page, pageSize);
+		switch (msgType) {
+		case 0:
+			messageList = messageRepository.queryMessagesByUserAndType(user.getSectId(), msgType, pageable);
+			break;
+		case 1:
+			messageList = messageRepository.queryMessagesByUserAndType(user.getSectId(), msgType, pageable);
+			break;
+		case 2:
+			messageList = messageRepository.queryMessagesByUserAndType(user.getSectId(), msgType, pageable);
+			break;
+		case 3:
+			messageList = messageRepository.queryMessagesByUserAndType(user.getSectId(), msgType, pageable);
+			break;	
+		case 9:
+			messageList = messageRepository.queryMessagesByStatusAndMsgType(pageable);
+			break;
+		default:
+			break;
+		}
+		
+		return messageList;
+	}
+	
+	
 
 }

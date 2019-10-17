@@ -4,6 +4,7 @@
 package com.yumu.hexie.model.community;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,6 +39,10 @@ public class ThreadComment implements Serializable {
 	private String toUserName;
 	private String toUserHead;
 	private String toUserReaded;
+	private String attachmentUrl;
+	private String uploadPicId;
+	private String imgHeight;	//图片高度 ，一对多，逗号分割
+	private String imgWidth;	//图片宽度，一对多，逗号分割
 	
 	@Transient
 	private String isCommentOwner;
@@ -45,6 +50,33 @@ public class ThreadComment implements Serializable {
 	@Transient
 	private String fmtCommentDateTime;
 	
+	@Transient
+	private List<String> previewLink;	//发布首页预览图
+	
+	public String getAttachmentUrl() {
+		return attachmentUrl;
+	}
+	public void setAttachmentUrl(String attachmentUrl) {
+		this.attachmentUrl = attachmentUrl;
+	}
+	public String getUploadPicId() {
+		return uploadPicId;
+	}
+	public void setUploadPicId(String uploadPicId) {
+		this.uploadPicId = uploadPicId;
+	}
+	public String getImgHeight() {
+		return imgHeight;
+	}
+	public void setImgHeight(String imgHeight) {
+		this.imgHeight = imgHeight;
+	}
+	public String getImgWidth() {
+		return imgWidth;
+	}
+	public void setImgWidth(String imgWidth) {
+		this.imgWidth = imgWidth;
+	}
 	public long getCommentId() {
 		return commentId;
 	}
@@ -136,6 +168,13 @@ public class ThreadComment implements Serializable {
 		long time = commentDateTime;
 		return DateUtil.getSendTime(time);
 		
+	}
+	public List<String> getPreviewLink() {
+		return previewLink;
+	}
+	public void setPreviewLink(List<String> previewLink) {
+		this.previewLink = previewLink;
 	}	
-
+   
+	
 }

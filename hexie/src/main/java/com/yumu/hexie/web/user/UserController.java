@@ -3,12 +3,17 @@ package com.yumu.hexie.web.user;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -22,7 +27,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.yumu.hexie.common.Constants;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.StringUtil;
-import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.user.UserWeiXin;
 import com.yumu.hexie.model.localservice.HomeServiceConstant;
 import com.yumu.hexie.model.promotion.coupon.Coupon;
@@ -32,6 +36,7 @@ import com.yumu.hexie.service.common.SmsService;
 import com.yumu.hexie.service.common.SystemConfigService;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.o2o.OperatorService;
+import com.yumu.hexie.service.shequ.ParamService;
 import com.yumu.hexie.service.shequ.WuyeService;
 import com.yumu.hexie.service.user.CouponService;
 import com.yumu.hexie.service.user.PointService;
@@ -42,13 +47,12 @@ import com.yumu.hexie.web.user.req.MobileYzm;
 import com.yumu.hexie.web.user.req.SimpleRegisterReq;
 import com.yumu.hexie.web.user.resp.UserInfo;
 
+
 @Controller(value = "userController")
 public class UserController extends BaseController{
 	
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
 	
-	private static final Integer lock = 0;
-
 	@Inject
 	private UserService userService;
 	@Inject
@@ -61,48 +65,67 @@ public class UserController extends BaseController{
     private CouponService couponService;
     @Inject
     private OperatorService operatorService;
-    
     @Inject
     private GotongService goTongService;
-    
     @Inject
     private SystemConfigService systemConfigService;
+    @Autowired
+    private ParamService paramService;
     
 
     @Value(value = "${testMode}")
-    private String testMode;
+    private Boolean testMode;
 	
 	@RequestMapping(value = "/userInfo", method = RequestMethod.GET)
 	@ResponseBody
-    public BaseResult<UserInfo> userInfo(HttpSession session,@ModelAttribute(Constants.USER)User user) throws Exception {
+    public BaseResult<UserInfo> userInfo(HttpSession session,@ModelAttribute(Constants.USER)User user,
+    		HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
-		log.info("sessionUser is : " + user);
-		
-		User sessionUser = user;	//先拷贝一个副本，因为user很可能跟数据库中的user不是同一个。
-		List<User> userList = userService.getByOpenId(user.getOpenid());	//根据openid去查,可能会有多条。但只有id相同的视为真实的登陆用户
-		if (userList!=null) {
-			for (User baseduser : userList) {
-				if (baseduser.getId() == user.getId()) {
-					user = baseduser;
-					break;
+		User sessionUser = user;
+		try {
+			
+			log.info("user in session :" + sessionUser);
+			List<User> userList = userService.getByOpenId(user.getOpenid());
+			if (userList!=null) {
+				for (User baseduser : userList) {
+					if (baseduser.getId() == user.getId()) {
+						user = baseduser;
+						break;
+					}
 				}
 			}
+			user = userService.getById(user.getId());
+			if(user != null){
+			    session.setAttribute(Constants.USER, user);
+			    UserInfo userInfo = new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId()));
+			    Map<String, String> paramMap = paramService.getParamByUser(user);
+			    userInfo.setCfgParam(paramMap);
+			    return new BaseResult<UserInfo>().success(userInfo);
+			} else {
+				log.error("current user id in session is not the same with the id in database. user : " + sessionUser + ", sessionId: " + session.getId());
+				session.setMaxInactiveInterval(1);//将会话过期
+				Thread.sleep(1000);
+				return new BaseResult<UserInfo>().success(null);
+			}
+		} catch (Exception e) {
+			
+			if (e instanceof BizValidateException) {
+				throw (BizValidateException)e;
+			}else {
+				throw new Exception(e);
+			}
 		}
-		user = userService.getById(user.getId());
-		
-		log.info("user in database : " + user);
-		
-        if(user != null){
-        	session.setAttribute(Constants.USER, user);
-        	UserInfo userinfo = new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId()));
-            return new BaseResult<UserInfo>().success(userinfo);
-        } else {
-        	log.error("current user id in session is not the same with the id in database. user : " + sessionUser + ", sessionId: " + session.getId());
-        	log.error("will expire the session on server side .");
-        	session.setMaxInactiveInterval(1);
-            return new BaseResult<UserInfo>().success(null);
-        }
     }
+	
+	//检查当前用户是否注册，注册标准参考电话是否为有值。
+	@RequestMapping(value = "/checkTell", method = RequestMethod.GET)
+	@ResponseBody
+	public BaseResult<?> checkTell(@ModelAttribute(Constants.USER)User user){
+		if(user.getTel() != null && !user.getTel().equals("")) {
+			 return BaseResult.successResult("用户已注册");
+		}
+		return BaseResult.fail("用户未注册");
+	}
 
 	@RequestMapping(value = "/profile", method = RequestMethod.GET)
 	@ResponseBody
@@ -119,43 +142,45 @@ public class UserController extends BaseController{
 	
 	@RequestMapping(value = "/login/{code}", method = RequestMethod.POST)
 	@ResponseBody
-    public BaseResult<UserInfo> login(HttpSession session,@PathVariable String code) throws Exception {
+    public BaseResult<UserInfo> login(HttpSession session,@PathVariable String code, @RequestBody(required = false) Map<String, String> postData) throws Exception {
 		
 		User userAccount = null;
-		if (StringUtil.isNotEmpty(code)) {
-		    if("true".equals(testMode)) {
-		        try{
-    		        Long id = Long.valueOf(code);
-    		    	userAccount = userService.getById(id);
-		        }catch(Throwable t){}
-		    }
-		    if(userAccount == null) {
-		        userAccount = userService.getOrSubscibeUserByCode(code);
-		    }
-			pointService.addZhima(userAccount, 5, "zm-login-"+DateUtil.dtFormat(new Date(),"yyyy-MM-dd")+userAccount.getId());
-			wuyeService.userLogin(userAccount.getOpenid());
-			
-			/*判断用户是否关注公众号*/
-			UserWeiXin u = userService.getOrSubscibeUserByOpenId(userAccount.getOpenid());
-			
-			updateWeUserInfo(userAccount, u);
-			
-			if(StringUtil.isEmpty(userAccount.getShareCode())) {
-				userAccount.generateShareCode();
-				userService.save(userAccount);
+		try {
+	    	
+			if (StringUtil.isNotEmpty(code)) {
+			    if(Boolean.TRUE.equals(testMode)) {
+			        try{
+				        Long id = Long.valueOf(code);
+				    	userAccount = userService.getById(id);
+			        }catch(Throwable t){}
+			    }
+			    if(userAccount == null) {
+		    		userAccount = userService.getOrSubscibeUserByCode(code);
+			    }
+			    
+				pointService.addZhima(userAccount, 5, "zm-login-"+DateUtil.dtFormat(new Date(),"yyyy-MM-dd")+userAccount.getId());
+				wuyeService.userLogin(userAccount.getOpenid());
+				
+				/*判断用户是否关注公众号*/
+				UserWeiXin u = userService.getOrSubscibeUserByOpenId(userAccount.getOpenid());
+				
+				updateWeUserInfo(userAccount, u);
+				session.setAttribute(Constants.USER, userAccount);
 			}
-			session.setAttribute(Constants.USER, userAccount);
-		}
-		if(userAccount == null) {
-            return new BaseResult<UserInfo>().failMsg("用户不存在！");
-		}
-		
-//		if (StringUtil.isEmpty(userAccount.getBindOpenId())) {
-//			return new BaseResult<UserInfo>().failCode(BaseResult.NEED_MAIN_LOGIN); 
-//		}
+			if(userAccount == null) {
+			    return new BaseResult<UserInfo>().failMsg("用户不存在！");
+			}
 
-        return new BaseResult<UserInfo>().success(new UserInfo(userAccount,
-            operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,userAccount.getId())));
+			return new BaseResult<UserInfo>().success(new UserInfo(userAccount,
+			    operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,userAccount.getId())));
+		} catch (Exception e) {
+			
+			if (e instanceof BizValidateException) {
+				throw (BizValidateException)e;
+			}else {
+				throw new Exception(e);
+			}
+		}
     }
 	
 	private void updateWeUserInfo(User userAccount, UserWeiXin newUser) {
@@ -166,6 +191,7 @@ public class UserController extends BaseController{
             }
             userAccount.setSubscribe(newUser.getSubscribe());
             userAccount.setSubscribe_time(newUser.getSubscribe_time());
+            userAccount.setShareCode(DigestUtils.md5Hex("UID["+userAccount.getId()+"]"));
             userService.save(userAccount);
         }
     }
@@ -175,32 +201,27 @@ public class UserController extends BaseController{
 		if (!user.isNewRegiste()) {
 			return ;
 		}
+		List<Coupon>list = new ArrayList<Coupon>();
 		
-		synchronized (lock) {
-			
-			List<Coupon>list = new ArrayList<Coupon>();
-			
-			String couponStr = systemConfigService.queryValueByKey("SUBSCRIBE_COUPONS");
-			String[]couponArr = null;
-			if (!StringUtil.isEmpty(couponStr)) {
-				couponArr = couponStr.split(",");
-			}
-			if (couponArr!=null) {
-				for (int i = 0; i < couponArr.length; i++) {
-					
-					try {
-						Coupon coupon = couponService.addCouponFromSeed(couponArr[i], user);
-						list.add(coupon);
-					} catch (Exception e) {
-						log.error(e.getMessage());
-					}
+		String couponStr = systemConfigService.queryValueByKey("SUBSCRIBE_COUPONS");
+		String[]couponArr = null;
+		if (!StringUtil.isEmpty(couponStr)) {
+			couponArr = couponStr.split(",");
+		}
+		if (couponArr!=null) {
+			for (int i = 0; i < couponArr.length; i++) {
+				
+				try {
+					Coupon coupon = couponService.addCouponFromSeed(couponArr[i], user);
+					list.add(coupon);
+				} catch (Exception e) {
+					log.error(e.getMessage());
 				}
 			}
-			
-			if (list.size()>0) {
-				goTongService.sendSubscribeMsg(user);
-			}
-			
+		}
+		
+		if (list.size()>0) {
+			goTongService.sendSubscribeMsg(user);
 		}
 		
 	}
@@ -215,8 +236,17 @@ public class UserController extends BaseController{
 		}
 	    return  new BaseResult<String>().success("验证码发送成功");
     }
-
-
+	
+	@RequestMapping(value = "/getyzm1", method = RequestMethod.POST)
+	@ResponseBody
+    public BaseResult<String> getYzm1(@RequestBody MobileYzm yzm) throws Exception {
+		boolean result = smsService.sendVerificationCode(12345, yzm.getMobile());
+		if(!result) {
+		    return new BaseResult<String>().failMsg("发送验证码失败");
+		}
+	    return  new BaseResult<String>().success("验证码发送成功");
+    }
+	
 	@RequestMapping(value = "/savePersonInfo/{captcha}", method = RequestMethod.POST)
 	@ResponseBody
 	public BaseResult<UserInfo> savePersonInfo(HttpSession session,@RequestBody User editUser,@ModelAttribute(Constants.USER)User user,
@@ -263,38 +293,38 @@ public class UserController extends BaseController{
         }
     }
     
-    /**
-     * 绑定主公众号的openid
-     * @param user
-     * @param code
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping(value = "/bindWechat/{code}", method = RequestMethod.POST)
-    @ResponseBody
-    public BaseResult<String> bindMain(@ModelAttribute(Constants.USER)User user, @PathVariable String code) throws Exception {
-    	
-    	User currUser = userService.getById(user.getId());
-    	if (currUser == null) {
-    		return new BaseResult<String>().failMsg("user does not exist !");
+    @RequestMapping(value = "/cancelSubscribe", method = RequestMethod.GET)
+	@ResponseBody
+    public BaseResult<String> cancelSubscribe(String weixin_id){
+    	List<User> userList = userService.getByOpenId(weixin_id);
+    	if (userList!=null && userList.size()>0) {
+    		for (User user : userList) {
+    			user.setSubscribe(0);
+        		userService.save(user);
+			}
+    		return  new BaseResult<String>().success("关注被取消"); 
+		}else {
+			return  new BaseResult<String>().failMsg("未找到该用户");
 		}
-    	if (StringUtil.isEmpty(currUser.getBindOpenId())) {
-    		String openId = "";
-        	if (StringUtil.isNotEmpty(code)) {
-        		try {
-    				openId = userService.getBindOrSubscibeUserOpenIdByCode(code);
-    				currUser.setBindOpenId(openId);
-    	        	currUser.setBindAppId(ConstantWeChat.BIND_APPID);
-    	        	userService.save(currUser);
-    			} catch (Exception e) {
-    				throw new BizValidateException("get bind openid failed ! ");
-    			}
-        	}
-        	
-		}
-    	
-    	return new BaseResult<String>().success("bind succeeded!");
-    	
+    	 
     }
     
+    @RequestMapping(value = "/saveLocation", method = RequestMethod.GET)
+   	@ResponseBody
+   	public BaseResult<String> saveLocation(String weixin_id,String Latitude,String Longitude){
+    	List<User> userList = userService.getByOpenId(weixin_id);
+    	if (userList!=null) {
+			for (User user : userList) {
+				user.setLatitude(Double.parseDouble(Latitude));//纬度
+		   		user.setLongitude(Double.parseDouble(Longitude));//经度
+				userService.save(user);
+			}
+			return new BaseResult<String>().success("地理位置保存成功!");
+		}else {
+			return new BaseResult<String>().failMsg("未找到该用户!");
+		}
+   		
+    	 
+    }
+  
 }

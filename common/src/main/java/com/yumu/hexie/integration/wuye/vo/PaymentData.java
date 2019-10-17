@@ -12,7 +12,6 @@ public class PaymentData implements Serializable {
 	private String cell_addr;
 	private String cnst_area;
 	private String ver_no;//户号
-	private String mng_cell_id;//物业单元ID
 	private List<PaymentItem> fee_name;
 	
 	public String getSect_name() {
@@ -50,12 +49,6 @@ public class PaymentData implements Serializable {
 	}
 	public void setFee_name(List<PaymentItem> fee_name) {
 		this.fee_name = fee_name;
-	}
-	public String getMng_cell_id() {
-		return mng_cell_id;
-	}
-	public void setMng_cell_id(String mng_cell_id) {
-		this.mng_cell_id = mng_cell_id;
 	}
 
 }

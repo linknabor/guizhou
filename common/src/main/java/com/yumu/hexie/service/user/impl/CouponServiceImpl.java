@@ -109,11 +109,13 @@ public class CouponServiceImpl implements CouponService {
 	@Override
 	public CouponSeed createOrderSeed(long userId,ServiceOrder order) {
 		log.error("CREATE SEED:" + userId + " -- " +order.getId());
+		//查询类型为订单分裂模板类型的优惠卷种子
 		List<CouponSeed> templates = couponSeedRepository.findBySeedType(ModelConstant.COUPON_SEED_ORDER_BUY_TEMPLATE);
 		for(CouponSeed template : templates) {
 			log.error("CREATE SEED:templateId:" + template.getId());
 			if(template == null||!template.isCanUse()||!canUse(template,order)) {
 			} else {
+				//根据种子id查询优惠卷规则表
 				List<CouponRule> rules = couponRuleRepository.findBySeedId(template.getId());
 				if(rules.isEmpty()) {
 					continue;

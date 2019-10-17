@@ -137,7 +137,7 @@ public class UploadServiceImpl implements UploadService {
             int imgcounter = 0;
             inputStream = null;
             while (inputStream == null && imgcounter < 3) {
-                inputStream = FileService.downloadFile(mediaId, accessToken); //重试3次
+                inputStream = FileService.downloadFile(mediaId,accessToken); //重试3次
                 if (inputStream == null) {
                     log.error("获取图片附件失败。" + mediaId);
                 }

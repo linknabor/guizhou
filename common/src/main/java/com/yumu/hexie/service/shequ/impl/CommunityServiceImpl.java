@@ -3,12 +3,14 @@
  */
 package com.yumu.hexie.service.shequ.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,6 @@ import com.yumu.hexie.model.community.CommunityInfoRepository;
 import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.community.ThreadComment;
 import com.yumu.hexie.model.community.ThreadCommentRepository;
-import com.yumu.hexie.model.community.ThreadOperatorRepository;
 import com.yumu.hexie.model.community.ThreadRepository;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.common.GotongService;
@@ -44,12 +45,20 @@ public class CommunityServiceImpl implements CommunityService {
 	@Inject
 	private AnnoucementRepository annoucementRepository;
 	
-	@Inject GotongService gotongService;
+	@Autowired
+	private GotongService gotongService;
 	
 	@Override
 	public List<Thread> getThreadList(long userSectId, Pageable page) {
 		
 		return threadRepository.findByThreadStatusAndUserSectId(ModelConstant.THREAD_STATUS_NORMAL, userSectId, page);
+		
+	}
+	
+	@Override
+	public List<Thread> getThreadListByUserId(long userId, Pageable page) {
+		
+		return threadRepository.findByThreadStatusAndUserId(ModelConstant.THREAD_STATUS_NORMAL, userId, page);
 		
 	}
 	
@@ -81,11 +90,10 @@ public class CommunityServiceImpl implements CommunityService {
 		thread.setUserHead(user.getHeadimgurl());
 		thread.setUserId(user.getId());
 		thread.setUserName(user.getNickname());
-		thread.setUserSectId(user.getXiaoquId());
+		thread.setUserSectId(Long.parseLong(user.getSectId()));
 		thread.setUserSectName(user.getXiaoquName());
 		thread.setStickPriority("0");	//默认优先级0，为最低
 		threadRepository.save(thread);
-		
 		gotongService.sendThreadPubNotify(user, thread);
 		
 		return thread;
@@ -232,33 +240,55 @@ public class CommunityServiceImpl implements CommunityService {
 	}
 
 	@Override
-	public List<Thread> getThreadListByUserId(String category, long userId,
-			Pageable page) {
-
-		return threadRepository.getThreadListByNewCategory(ModelConstant.THREAD_STATUS_NORMAL, category, page);
+	public Page<Thread> getThreadList(String nickName, String createDate,String sectId, List<String> sectIds,Pageable pageable) {
+		return threadRepository.getThreadList(nickName,createDate,sectId,sectIds,pageable);
 	}
 
 	@Override
-	public List<Thread> getThreadListByUserId(long userId, Pageable page) {
-
-		return threadRepository.findByThreadStatusAndUserId(ModelConstant.THREAD_STATUS_NORMAL, userId, page);
+	@Transactional
+	public void deleteThread(String[] threadIds) {
+		threadRepository.deleteThread(threadIds);
 	}
 
 	@Override
-	public List<Thread> getThreadListByUserId(long userId, String category, Pageable page) {
-		if("2".equals(category))
-		{
-			List<String> list = new ArrayList<String>();
-			list.add("2");
-			list.add("3");
-			return threadRepository.findByThreadStatusAndUserIdAndThreadCategory(ModelConstant.THREAD_STATUS_NORMAL, userId, list, page);
-		}else
-		{
-			return threadRepository.findByThreadStatusAndUserIdAndThreadCategory(ModelConstant.THREAD_STATUS_NORMAL, userId, category, page);
+	@Transactional
+	public void saveThreadComment(Long threadId, String content, Long userId, String userName) {
+		Thread thread=threadRepository.findOne(threadId);
+		Long toUserId =thread.getUserId();
+		String toUserName=thread.getUserName();
+		
+		ThreadComment comment=new ThreadComment();
+		comment.setCommentDateTime(System.currentTimeMillis());
+		comment.setCommentDate(DateUtil.dtFormat(new Date(), "yyyyMMdd"));
+		comment.setCommentTime(DateUtil.dtFormat(new Date().getTime(), "HHMMss"));
+		comment.setToUserId(toUserId);
+		comment.setToUserName(toUserName);
+		comment.setCommentUserId(userId);
+		comment.setCommentUserName(userName);
+		comment.setThreadId(threadId);
+		comment.setCommentContent(content);
+		threadCommentRepository.save(comment);
+		
+		thread.setCommentsCount(thread.getCommentsCount()+1); 
+		thread.setHasUnreadComment("true");
+		thread.setLastCommentTime(System.currentTimeMillis());
+		threadRepository.save(thread);
+		
+	}
+
+	@Override
+	public ThreadComment getThreadCommentByTreadId(long threadCommentId) {
+		return threadCommentRepository.findOne(threadCommentId);
+	}
+	
+	@Override
+	public void updateThreadComment(ThreadComment thread) {
+
+		ThreadComment t = threadCommentRepository.findOne(thread.getCommentId());
+		if (t == null) {
+			throw new BizValidateException("帖子不存在。");
 		}
+		threadCommentRepository.save(thread);
 	}
-	
-	
-	
 	
 }
