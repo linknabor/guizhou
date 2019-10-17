@@ -7,7 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.yumu.hexie.common.util.JacksonJsonUtil;
+import com.yumu.hexie.common.util.UnionUtil;
 import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.common.CloseOrderResp;
 import com.yumu.hexie.integration.wechat.entity.common.JsSign;
@@ -15,9 +19,13 @@ import com.yumu.hexie.integration.wechat.entity.common.PaymentOrderResult;
 import com.yumu.hexie.integration.wechat.entity.common.PrePaymentOrder;
 import com.yumu.hexie.integration.wechat.util.MessageUtil;
 import com.yumu.hexie.integration.wechat.util.WeixinUtil;
+import com.yumu.hexie.integration.wechat.vo.UnionPayVO;
 import com.yumu.hexie.model.payment.PaymentOrder;
+import com.yumu.hexie.service.exception.BizValidateException;
 
 public class FundService {
+	
+	private static final Logger log = LoggerFactory.getLogger(FundService.class);
 	
 	private static final String UNIPAY_URL = "https://api.mch.weixin.qq.com/pay/unifiedorder";
 	
@@ -69,10 +77,35 @@ public class FundService {
 		map.put("sign", sign);
 		map.remove("key");	//只有生成签名的时候需要将key加入，组建XML时无须使用KEY，不然会报错。
 		String requestXml = MessageUtil.createPayRequestXML(map);
+		//String requestXml = JacksonJsonUtil.mapToXml(map);
 		PrePaymentOrder r = (PrePaymentOrder)WeixinUtil.httpsRequestXml(
 				UNIPAY_URL,  "POST", requestXml,PrePaymentOrder.class);
 		return r; 
 	}
+	
+	
+	public static String getNotify(UnionPayVO unionpayvo) {
+		// TODO Auto-generated method stub
+		try {
+			
+			String requestStr = unionpayvo.getUnionPayStr();
+			log.info("银联返回结果2："+requestStr);
+			boolean signFlag = UnionUtil.verferSignData(requestStr);
+			
+			if (!signFlag) {
+				//验签失败
+				return "FAIL";
+			}
+			if("0000".equals(unionpayvo.getRespCode())) {
+				return unionpayvo.getOrderNo();
+			}
+		} catch (Exception e) {
+			throw new BizValidateException("银联回调报错");
+		} 
+		
+		return "FAIL";
+	}
+	
 	
 	/**
 	 * 订单查询接口
