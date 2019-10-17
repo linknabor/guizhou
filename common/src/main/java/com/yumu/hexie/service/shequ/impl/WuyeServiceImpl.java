@@ -14,6 +14,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -27,6 +28,7 @@ import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
+import com.yumu.hexie.integration.wuye.vo.HexieAddress;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.InvoiceInfo;
@@ -212,6 +214,7 @@ public class WuyeServiceImpl implements WuyeService {
 			currUser.setCellAddr(house.getCell_addr());
 			//这个user在外层需要重新set回session中
 			user.setTotalBind(1);
+			user.setCspId(house.getCsp_id());
 			user.setSectId(house.getSect_id());
 			user.setSectName(house.getSect_name());
 			user.setCellId(house.getMng_cell_id());
@@ -239,6 +242,10 @@ public class WuyeServiceImpl implements WuyeService {
 			user.setOfficeTel(r.getData().getOffice_tel());	//set到session
 		}
 		userRepository.save(currUser);
+		
+		HexieAddress hexieAddress = new HexieAddress();
+		BeanUtils.copyProperties(house, hexieAddress);
+		setDefaultAddressByAddress(currUser, hexieAddress);;
 		
 		return r.getData();
 	}
@@ -363,11 +370,47 @@ public class WuyeServiceImpl implements WuyeService {
 		
 	}
 
+	@Transactional(propagation = Propagation.REQUIRED)
 	@Override
 	public void setDefaultAddress(User user,HexieUser u) {
 
+		HexieAddress hexieAddress = new HexieAddress();
+		BeanUtils.copyProperties(u, hexieAddress);
+		setDefaultAddressByAddress(user, hexieAddress);
+		Integer totalBind = user.getTotalBind();
+		if (totalBind == null) {
+			totalBind = 0;
+		}
+		if (!StringUtils.isEmpty(u.getTotal_bind())) {
+			totalBind = u.getTotal_bind();	//如果值不为空，说明是跑批程序返回回来的，直接取值即可，如果值是空，走下面的else累加即可
+		}else {
+			totalBind = totalBind+1;
+		}
+		
+		user.setTotalBind(totalBind);
+		user.setXiaoquName(u.getSect_name());
+		user.setProvince(u.getProvince_name());
+		user.setCity(u.getCity_name());
+		user.setCounty(u.getRegion_name());
+		user.setSectId(u.getSect_id());	
+		user.setSectName(u.getSect_name());
+		user.setCspId(u.getCsp_id());
+		user.setCellAddr(u.getCell_addr());
+		user.setCellId(u.getCell_id());
+		user.setOfficeTel(u.getOffice_tel());
+		userService.save(user);
+		
+	}
+
+	/**
+	 * 根据合协社区用户绑定
+	 * @param user
+	 * @param addr
+	 */
+	private void setDefaultAddressByAddress(User user, HexieAddress addr) {
+		
 		boolean result = true;
-		List<Address> list = addressService.getAddressByuserIdAndAddress(user.getId(), u.getCell_addr());
+		List<Address> list = addressService.getAddressByuserIdAndAddress(user.getId(), addr.getCell_addr());
 		for (Address address : list) {
 			if (address.isMain()) {
 				log.error("存在重复默认地址:"+address.getDetailAddress()+"---id:"+address.getId());
@@ -386,19 +429,19 @@ public class WuyeServiceImpl implements WuyeService {
 			}
 			
 			List<Region> re = null;
-			if (u.getSect_id() != null) {
-				re = regionService.findAllBySectId(u.getSect_id());
+			if (addr.getSect_id() != null) {
+				re = regionService.findAllBySectId(addr.getSect_id());
 				if(re.size()==0){
-					log.info("未查询到小区！"+u.getSect_name() + ",开始创建。");
+					log.info("未查询到小区！"+addr.getSect_name() + ",开始创建。");
 					Region region = new Region();
-					region.setName(u.getSect_name());
+					region.setName(addr.getSect_name());
 					region.setParentId(0);
-					region.setParentName(u.getRegion_name());
+					region.setParentName(addr.getRegion_name());
 					region.setRegionType(ModelConstant.REGION_XIAOQU);
 					region.setLatitude(0d);
 					region.setLongitude(0d);
-					region.setXiaoquAddress(u.getSect_addr());
-					region.setSectId(u.getSect_id());
+					region.setXiaoquAddress(addr.getSect_addr());
+					region.setSectId(addr.getSect_id());
 					regionRepository.save(region);
 					re = new ArrayList<>();
 					re.add(region);
@@ -419,22 +462,22 @@ public class WuyeServiceImpl implements WuyeService {
 					add.setUserId(user.getId());
 					add.setCreateDate(System.currentTimeMillis());
 					add.setXiaoquId(re.get(0).getId());
-					add.setXiaoquName(u.getSect_name());
-					add.setDetailAddress(u.getCell_addr());
-					add.setCity(u.getCity_name());
-					Long cityId = map.get(u.getCity_name());
+					add.setXiaoquName(addr.getSect_name());
+					add.setDetailAddress(addr.getCell_addr());
+					add.setCity(addr.getCity_name());
+					Long cityId = map.get(addr.getCity_name());
 					if (cityId == null) {
 						cityId = 0l;
 					}
 					add.setCityId(cityId);
-					add.setCounty(u.getRegion_name());
-					Long countyId = map.get(u.getRegion_name());
+					add.setCounty(addr.getRegion_name());
+					Long countyId = map.get(addr.getRegion_name());
 					if (countyId == null) {
 						countyId = 0l;
 					}
 					add.setCountyId(countyId);
-					add.setProvince(u.getProvince_name());
-					Long provinceId = map.get(u.getProvince_name());
+					add.setProvince(addr.getProvince_name());
+					Long provinceId = map.get(addr.getProvince_name());
 					if (provinceId == null) {
 						provinceId = 0l;
 					}
@@ -462,29 +505,6 @@ public class WuyeServiceImpl implements WuyeService {
 			}
 			
 		}
-		Integer totalBind = user.getTotalBind();
-		if (totalBind == null) {
-			totalBind = 0;
-		}
-		if (!StringUtils.isEmpty(u.getTotal_bind())) {
-			totalBind = u.getTotal_bind();	//如果值不为空，说明是跑批程序返回回来的，直接取值即可，如果值是空，走下面的else累加即可
-		}else {
-			totalBind = totalBind+1;
-		}
-		
-		user.setTotalBind(totalBind);
-		user.setXiaoquName(u.getSect_name());
-		user.setProvince(u.getProvince_name());
-		user.setCity(u.getCity_name());
-		user.setCounty(u.getRegion_name());
-		user.setSectId(u.getSect_id());	
-		user.setSectName(u.getSect_name());
-		user.setCspId(u.getCsp_id());
-		user.setCellAddr(u.getCell_addr());
-		user.setCellId(u.getCell_id());
-		user.setOfficeTel(u.getOffice_tel());
-		userService.save(user);
-		
 	}
 
 	@Override
