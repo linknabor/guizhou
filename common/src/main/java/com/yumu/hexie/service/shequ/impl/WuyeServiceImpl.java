@@ -710,9 +710,9 @@ public class WuyeServiceImpl implements WuyeService {
 	}
 
 	@Override
-	public HexieHouse getHouseByVerNo(User user, String vouNo) {
+	public HexieHouse getHouseByVerNo(User user, String verNo) {
 		
-		return WuyeUtil.getHouseByVerNo(user.getWuyeId(), vouNo).getData();
+		return WuyeUtil.getHouseByVerNo(user.getWuyeId(), verNo).getData();
 	}
 	
 }

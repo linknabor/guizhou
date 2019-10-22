@@ -742,12 +742,12 @@ public class WuyeController extends BaseController {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/hexiehouse/{vouno}", method = RequestMethod.GET)
+	@RequestMapping(value = "/hexiehouse/{verno}", method = RequestMethod.GET)
 	@ResponseBody
 	public BaseResult<HexieHouse> hexiehouse(@ModelAttribute(Constants.USER) User user,
-			@PathVariable String vouno) throws Exception {
+			@PathVariable String verNo) throws Exception {
 		
-		HexieHouse hexieHouse = wuyeService.getHouseByVerNo(user, vouno);
+		HexieHouse hexieHouse = wuyeService.getHouseByVerNo(user, verNo);
 		log.info(" hexieHouse: " + hexieHouse);
 		return BaseResult.successResult(hexieHouse);
 	}

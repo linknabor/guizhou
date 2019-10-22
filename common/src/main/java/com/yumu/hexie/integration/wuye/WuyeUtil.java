@@ -58,7 +58,7 @@ public class WuyeUtil {
 	private static final String ADD_HOUSE_URL = "addHouseSDO.do?user_id=%s&stmt_id=%s&mng_cell_id=%s"; // 添加房子
 	private static final String ADD_HOUSENOSTMT_URL = "addHouseNoStmtSDO.do?user_id=%s&mng_cell_id=%s&area=%s"; // 无账单添加房子
 	private static final String SYS_ADD_HOUSE_URL = "billSaveHoseSDO.do?user_id=%s&stmt_id=%s&house_id=%s"; // 扫一扫（添加房子）
-	private static final String GET_HOUSE_VERNO_URL = "queryHouByVouNoSDO.do?user_id=%s&vou_no=%s"; // 扫一扫（添加房子）
+	private static final String GET_HOUSE_VERNO_URL = "queryHouByVouNoSDO.do?user_id=%s&ver_no=%s"; // 扫一扫（添加房子）
 	private static final String DEL_HOUSE_URL = "delHouseSDO.do?user_id=%s&mng_cell_id=%s"; // 删除房子
 	private static final String BILL_LIST_URL = "getBillListMSDO.do?user_id=%s&pay_status=%s&startDate=%s&endDate=%s&curr_page=%s&total_count=%s&house_id=%s&sect_id=%s"; // 获取账单列表
 	private static final String BILL_DETAIL_URL = "getBillInfoMSDO.do?user_id=%s&stmt_id=%s&bill_id=%s"; // 获取账单详情
@@ -128,8 +128,8 @@ public class WuyeUtil {
 	 * @param house_id
 	 * @return
 	 */
-	public static BaseResult<HexieHouse> getHouseByVerNo(String userId, String vouNo) {
-		String url = REQUEST_ADDRESS + String.format(GET_HOUSE_VERNO_URL, userId, vouNo);
+	public static BaseResult<HexieHouse> getHouseByVerNo(String userId, String verNo) {
+		String url = REQUEST_ADDRESS + String.format(GET_HOUSE_VERNO_URL, userId, verNo);
 		return (BaseResult<HexieHouse>)httpGet(url,HexieHouse.class);
 	}
 	
