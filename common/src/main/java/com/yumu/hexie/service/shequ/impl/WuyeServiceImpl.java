@@ -708,5 +708,11 @@ public class WuyeServiceImpl implements WuyeService {
 	public String getSectIdByRegionName(String regionName) {
 		return WuyeUtil.querySectIdByName(regionName).getData();
 	}
+
+	@Override
+	public HexieHouse getHouseByVerNo(User user, String vouNo) {
+		
+		return WuyeUtil.getHouseByVerNo(user.getWuyeId(), vouNo).getData();
+	}
 	
 }

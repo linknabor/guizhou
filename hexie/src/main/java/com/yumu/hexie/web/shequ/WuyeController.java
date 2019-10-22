@@ -733,5 +733,23 @@ public class WuyeController extends BaseController {
 
 	}
 	
+	/**
+	 * 根据户号添加绑定房屋
+	 * @param user
+	 * @param houseId
+	 * @param area
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/hexiehouse/{vouno}", method = RequestMethod.GET)
+	@ResponseBody
+	public BaseResult<HexieHouse> hexiehouse(@ModelAttribute(Constants.USER) User user,
+			@PathVariable String vouno) throws Exception {
+		
+		HexieHouse hexieHouse = wuyeService.getHouseByVerNo(user, vouno);
+		log.info(" hexieHouse: " + hexieHouse);
+		return BaseResult.successResult(hexieHouse);
+	}
 
 }
