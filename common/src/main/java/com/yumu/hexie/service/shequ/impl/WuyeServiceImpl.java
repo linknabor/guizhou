@@ -712,6 +712,15 @@ public class WuyeServiceImpl implements WuyeService {
 	@Override
 	public HexieHouse getHouseByVerNo(User user, String verNo) {
 		
+		if (StringUtils.isEmpty(verNo)) {
+			throw new BizValidateException("户号不能为空。");
+		}
+		verNo = verNo.trim();
+		if (verNo.length() != 12) {
+			throw new BizValidateException("请输入正确的户号。");
+		}
+
+		verNo = verNo.replaceAll(" ", "");
 		return WuyeUtil.getHouseByVerNo(user.getWuyeId(), verNo).getData();
 	}
 	
