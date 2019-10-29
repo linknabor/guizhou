@@ -128,9 +128,11 @@ public class WuyeUtil {
 	 * @param house_id
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public static BaseResult<HexieHouse> getHouseByVerNo(String userId, String verNo) {
 		String url = REQUEST_ADDRESS + String.format(GET_HOUSE_VERNO_URL, userId, verNo);
-		return (BaseResult<HexieHouse>)httpGet(url,HexieHouse.class);
+		BaseResult<HexieHouse> baseResult = httpGet(url,HexieHouse.class);;
+		return baseResult;
 	}
 	
 	
