@@ -745,7 +745,7 @@ public class WuyeController extends BaseController {
 	@RequestMapping(value = "/hexiehouse/{verno}", method = RequestMethod.GET)
 	@ResponseBody
 	public BaseResult<HexieHouse> hexiehouse(@ModelAttribute(Constants.USER) User user,
-			@PathVariable String verNo) throws Exception {
+			@PathVariable(value = "verno") String verNo) throws Exception {
 		
 		HexieHouse hexieHouse = wuyeService.getHouseByVerNo(user, verNo);
 		log.info(" hexieHouse: " + hexieHouse);
