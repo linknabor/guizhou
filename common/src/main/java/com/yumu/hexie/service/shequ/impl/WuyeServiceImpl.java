@@ -182,7 +182,7 @@ public class WuyeServiceImpl implements WuyeService {
 					HexieHouse house = getHouse(user.getWuyeId(), stmtId, idsSuff[i]);
 					if(house!=null)
 					{
-						bindHouse(user, stmtId, house);
+						bindHouse(user, stmtId, house);	//FIXME 自调用这个函数上的事务是不会生效的，有异常的话事务不能回滚。以后有空再改。
 					}
 				} catch(Exception e)
 				{
