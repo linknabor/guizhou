@@ -3,6 +3,8 @@ package com.yumu.hexie.integration.wuye.vo;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.util.StringUtils;
+
 public class HexieHouse implements Serializable {
 
 	private static final long serialVersionUID = -699024784725033137L;
@@ -25,6 +27,7 @@ public class HexieHouse implements Serializable {
 	private String sect_id;//小区id
 	private String csp_id;//公司
 	private String center_id;//中心管理id
+	private String cust_name;	//业主姓名
 	
 	public String getSect_id() {
 		return sect_id;
@@ -122,6 +125,16 @@ public class HexieHouse implements Serializable {
 	}
 	public void setPark_inf(List<ParkInfo> park_inf) {
 		this.park_inf = park_inf;
+	}
+	public String getCust_name() {
+		String displayName = "";
+		if (!StringUtils.isEmpty(cust_name)) {
+			displayName = "*" + cust_name.substring(1);
+		}
+		return displayName;
+	}
+	public void setCust_name(String cust_name) {
+		this.cust_name = cust_name;
 	}
 	@Override
 	public String toString() {
