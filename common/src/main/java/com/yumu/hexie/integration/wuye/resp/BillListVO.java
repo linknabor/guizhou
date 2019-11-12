@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.yumu.hexie.integration.wuye.vo.BillInfo;
+import com.yumu.hexie.integration.wuye.vo.OtherBillInfo;
 
 public class BillListVO implements Serializable {
 
@@ -13,6 +14,7 @@ public class BillListVO implements Serializable {
 	private int total_not_pay;	//未支付的账单数量
 	private List<BillInfo> bill_info;
 	private List<BillInfo> car_bill_info;
+	private List<OtherBillInfo> other_bill_info;
 	private int permit_skip_pay;//0?
 	private int permit_skip_car_pay;
 	private int park_discount_rule_conf;
@@ -21,6 +23,13 @@ public class BillListVO implements Serializable {
 	private String reduce_mode;	//减免模式，记账时总金额四舍五入，0表示没有此功能，1表示四舍五入至元，2表示四舍五入至角，3表示自由调价
 	private int bills_size;
 
+	
+	public List<OtherBillInfo> getOther_bill_info() {
+		return other_bill_info;
+	}
+	public void setOther_bill_info(List<OtherBillInfo> other_bill_info) {
+		this.other_bill_info = other_bill_info;
+	}
 	public int getPark_discount_rule_conf() {
 		return park_discount_rule_conf;
 	}

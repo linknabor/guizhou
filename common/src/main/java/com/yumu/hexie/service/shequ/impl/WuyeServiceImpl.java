@@ -25,6 +25,7 @@ import com.yumu.hexie.common.util.TransactionUtil;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
+import com.yumu.hexie.integration.wuye.resp.BillStartDate;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
@@ -722,6 +723,30 @@ public class WuyeServiceImpl implements WuyeService {
 
 		verNo = verNo.replaceAll(" ", "");
 		return WuyeUtil.getHouseByVerNo(user.getWuyeId(), verNo).getData();
+	}
+
+	@Override
+	public WechatPayInfo getOtherPrePayInfo(User user, String houseId, String start_date, String end_date,
+			String couponUnit, String couponNum, String couponId, String mianBill, String mianAmt, String reduceAmt ) throws Exception {
+
+		return WuyeUtil.getOtherPrePayInfo(user, houseId, start_date,end_date, couponUnit, couponNum, couponId,mianBill,mianAmt, reduceAmt)
+				.getData();
+	}
+
+	@Override
+	public BillListVO queryBillListStd(String userId, String startDate, String endDate, String house_id, String sect_id) {
+		return WuyeUtil.queryBillList(userId, startDate, endDate,house_id,sect_id).getData();
+	}
+
+	@Override
+	public BillStartDate getBillStartDateSDO(String userId, String house_id) {
+		try {
+			return WuyeUtil.getBillStartDateSDO(userId,house_id).getData();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			log.error(e.getMessage(),e);
+		}
+		return null;
 	}
 	
 }

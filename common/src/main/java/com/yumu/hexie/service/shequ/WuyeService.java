@@ -3,6 +3,7 @@ package com.yumu.hexie.service.shequ;
 
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
+import com.yumu.hexie.integration.wuye.resp.BillStartDate;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
@@ -45,6 +46,9 @@ public interface WuyeService {
 				String couponUnit, String couponNum, 
 				String couponId,String mianBill,String mianAmt, String reduceAmt, 
 				String invoice_title_type, String credit_code, String invoice_title) throws Exception;
+	// 10.5 无账单缴费
+	public WechatPayInfo getOtherPrePayInfo(User user,String houseId,String start_date,String end_date, 
+				String couponUnit, String couponNum, String couponId,String mianBill,String mianAmt, String reduceAmt) throws Exception;
 	// 11.通知已支付
 	public PayResult noticePayed(User user,String billId,String stmtId, String tradeWaterId, String packageId, String bind_switch);
 	// 12.查询是否已经用过红包
@@ -105,5 +109,8 @@ public interface WuyeService {
 	
 	HexieHouse getHouseByVerNo(User user, String verNo);
 	
-	
+	// 8.账单记录
+	public BillListVO queryBillListStd(String userId,String startDate,String endDate,String house_id,String sect_id);
+	//获取无账单开始日期
+	public BillStartDate getBillStartDateSDO(String userId,String house_id);
 }

@@ -19,6 +19,7 @@ import com.yumu.hexie.common.util.JacksonJsonUtil;
 import com.yumu.hexie.common.util.MyHttpClient;
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
+import com.yumu.hexie.integration.wuye.resp.BillStartDate;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
@@ -29,6 +30,7 @@ import com.yumu.hexie.integration.wuye.vo.InvoiceInfo;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
 import com.yumu.hexie.integration.wuye.vo.PaymentInfo;
 import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
+import com.yumu.hexie.model.user.User;
 
 public class WuyeUtil {
 	private static final Logger log = LoggerFactory.getLogger(WuyeUtil.class);
@@ -61,12 +63,15 @@ public class WuyeUtil {
 	private static final String GET_HOUSE_VERNO_URL = "queryHouByVouNoSDO.do?user_id=%s&ver_no=%s"; // 扫一扫（添加房子）
 	private static final String DEL_HOUSE_URL = "delHouseSDO.do?user_id=%s&mng_cell_id=%s"; // 删除房子
 	private static final String BILL_LIST_URL = "getBillListMSDO.do?user_id=%s&pay_status=%s&startDate=%s&endDate=%s&curr_page=%s&total_count=%s&house_id=%s&sect_id=%s"; // 获取账单列表
+	private static final String BILL_LIST_STD_URL = "getPayListStdSDO.do?user_id=%s&start_date=%s&end_date=%s&mng_cell_id=%s&sect_id=%s"; // 获取账单列表
 	private static final String BILL_DETAIL_URL = "getBillInfoMSDO.do?user_id=%s&stmt_id=%s&bill_id=%s"; // 获取账单详情
 	private static final String PAY_RECORD_URL = "payMentRecordSDO.do?user_id=%s&startDate=%s&endDate=%s"; // 获取支付记录列表
 	private static final String PAY_INFO_URL = "payMentRecordInfoSDO.do?user_id=%s&trade_water_id=%s"; // 获取支付记录详情
 	private static final String QUICK_PAY_URL = "quickPaySDO.do?stmt_id=%s&curr_page=%s&total_count=%s"; // 快捷支付
 	private static final String WXLOGIN_URL = "weixinLoginSDO.do?weixin_id=%s"; // 登录验证（微信登录）
 	private static final String WX_PAY_URL = "wechatPayRequestSDO.do?user_id=%s&bill_id=%s&stmt_id=%s&openid=%s&coupon_unit=%s&coupon_num=%s"
+			+ "&coupon_id=%s&from_sys=%s&mianBill=%s&mianAmt=%s&reduceAmt=%s"; // 微信支付请求
+	private static final String OTHER_WX_PAY_URL = "otherWechatPayRequestSDO.do?user_id=%s&mng_cell_id=%s&start_date=%s&end_date=%s&openid=%s&coupon_unit=%s&coupon_num=%s"
 			+ "&coupon_id=%s&from_sys=%s&mianBill=%s&mianAmt=%s&reduceAmt=%s"; // 微信支付请求
 	private static final String MEMBER_WX_PAY_URL = "member/memberPayRequestSDO.do?bill_id=%s&openid=%s&totalPrice=%s&notifyUrl=%s"; // 微信支付请求
 	private static final String MEMBER_WX_Query_URL = "member/memberQueryOrderSDO.do?bill_id=%s"; // 微信支付查询请求
@@ -80,6 +85,7 @@ public class WuyeUtil {
 	private static final String BILL_PAY_ADDRESS_URL = "getBillAddressSDO.do"+ "?bill_id=%s";//查询账单地址
 	private static final String SYNC_SERVICE_CFG_URL = "param/getParamSDO.do?info_id=%s&type=%s&para_name=%s";
 	private static final String PAY_WATER_URL = "getMngCellByTradeIdSDO.do?user_id=%s&trade_water_id=%s"; // 获取支付记录涉及的房屋
+	private static final String BILL_LIST_DATE = "getBillStartDateSDO.do?user_id=%s&mng_cell_id=%s";//获取无账单日期
 	
 	public static BaseResult<BillListVO> quickPayInfo(String stmtId, String currPage, String totalCount) {
 		String url = REQUEST_ADDRESS + String.format(QUICK_PAY_URL, stmtId, currPage, totalCount);
@@ -201,7 +207,19 @@ public class WuyeUtil {
 		}
 		return (BaseResult<WechatPayInfo>)baseResult;
 	}
+	// 10.5 无账单缴费
+	public static BaseResult<WechatPayInfo> getOtherPrePayInfo(User user,String houseId,String start_date,String end_date,
+		String couponUnit, String couponNum, String couponId,String mianBill,String mianAmt, String reduceAmt) throws Exception {
+		
+		String url = REQUEST_ADDRESS + String.format(OTHER_WX_PAY_URL, user.getWuyeId(),houseId,start_date,end_date,user.getOpenid(),
+					couponUnit,couponNum,couponId,SYSTEM_NAME,mianBill, mianAmt, reduceAmt);
 	
+		BaseResult baseResult = httpGet(url,WechatPayInfo.class);
+		if (!baseResult.isSuccess()) {
+			throw new ValidationException(baseResult.getData().toString());
+		}
+		return (BaseResult<WechatPayInfo>)baseResult;
+	}
 	// 11.通知已支付
 	public static BaseResult<PayResult> noticePayed(String userId,String billId,String stmtId, String tradeWaterId, String packageId) {
 		String url = REQUEST_ADDRESS + String.format(WX_PAY_NOTICE, userId,billId,stmtId, tradeWaterId, packageId);
@@ -293,6 +311,22 @@ public class WuyeUtil {
 		String url = REQUEST_ADDRESS + String.format(SYNC_SERVICE_CFG_URL, infoId, type, paraName);
 		BaseResult baseResult = httpGet(url, HexieConfig.class);
 		return (BaseResult<HexieConfig>)baseResult;
+	}
+	
+	//无账单获取缴费日期
+	public static BaseResult<BillStartDate> getBillStartDateSDO(String userid,String house_id) throws Exception{
+
+		String url = REQUEST_ADDRESS + String.format(BILL_LIST_DATE,userid, house_id);
+		log.error("【url】:"+url);
+		return (BaseResult<BillStartDate>)httpGet(url,BillStartDate.class);
+	}
+	
+	// 8.5：无账单记录
+	public static BaseResult<BillListVO> queryBillList(String userId,String startDate,String endDate, String house_id,String sect_id){
+		//total_count 和curr_page没有填
+		log.error("startDate:"+startDate+"     endDate"+endDate);
+		String url = REQUEST_ADDRESS + String.format(BILL_LIST_STD_URL, userId,startDate,endDate,house_id,sect_id);
+		return (BaseResult<BillListVO>)httpGet(url,BillListVO.class);
 	}
 	
 	private static BaseResult httpGet(String reqUrl, Class c){
