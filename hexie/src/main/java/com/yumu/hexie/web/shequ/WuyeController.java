@@ -778,7 +778,7 @@ public class WuyeController extends BaseController {
 	@ResponseBody
 	public BaseResult<BillListVO> getPayListStd(@ModelAttribute(Constants.USER) User user, @RequestParam(required = false) String start_date,
 			@RequestParam(required = false) String end_date,  @RequestParam(required = false) String house_id, 
-			@RequestParam(required = false) String sect_id, @RequestParam(required = false) String regionname)
+			@RequestParam(required = false) String sect_id)
 			throws Exception {
 		BillListVO listVo = wuyeService.queryBillListStd(user.getWuyeId(), start_date, end_date,house_id,sect_id);
 		if (listVo != null && !listVo.getOther_bill_info().isEmpty()) {
@@ -791,7 +791,7 @@ public class WuyeController extends BaseController {
 	//查询无账单缴费房子开始日期
 	@RequestMapping(value = "/getBillStartDateSDO", method = RequestMethod.GET)
 	@ResponseBody
-	public BaseResult<BillStartDate> getBillStartDateSDO(@ModelAttribute(Constants.USER) User user,@RequestParam String house_id,@RequestParam String regionname) throws Exception {
+	public BaseResult<BillStartDate> getBillStartDateSDO(@ModelAttribute(Constants.USER) User user,@RequestParam String house_id) throws Exception {
 
 		return BaseResult.successResult(wuyeService.getBillStartDateSDO(user.getWuyeId(),house_id));
 	}
