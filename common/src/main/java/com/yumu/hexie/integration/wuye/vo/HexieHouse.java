@@ -16,6 +16,7 @@ public class HexieHouse implements Serializable {
 	private String cnst_area;
 	private String ver_no;
 	private List<ParkInfo> park_inf;
+	private String version;//公司版本（标准版，专业版）
 	
 	private long province_id;//省id
 	private String province_name;//省名
@@ -29,6 +30,12 @@ public class HexieHouse implements Serializable {
 	private String center_id;//中心管理id
 	private String cust_name;	//业主姓名
 	
+	public String getVersion() {
+		return version;
+	}
+	public void setVersion(String version) {
+		this.version = version;
+	}
 	public String getSect_id() {
 		return sect_id;
 	}
