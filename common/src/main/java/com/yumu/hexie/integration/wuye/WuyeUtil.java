@@ -351,7 +351,16 @@ public class WuyeUtil {
 					throw new ExecutionException(err_code+", " +err_msg);
 				}
 			}
-			
+			if(reqUrl.indexOf("otherWechatPayRequestSDO.do")>=0) {
+				resp = resp.replace("package", "packageValue");
+				Map respMap = JacksonJsonUtil.json2map(resp);
+				String result = (String)respMap.get("result");
+				if (!"00".equals(result)) {
+					err_msg = (String)respMap.get("err_msg");
+					err_code = result;
+					throw new ExecutionException(err_code+", " +err_msg);
+				}
+			}
 			if (reqUrl.indexOf("wechatPayQuerySDO.do")>=0) {
 				Map respMap = JacksonJsonUtil.json2map(resp);
 				String result = (String)respMap.get("result");
