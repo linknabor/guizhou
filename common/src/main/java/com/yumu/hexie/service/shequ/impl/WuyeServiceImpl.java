@@ -737,7 +737,7 @@ public class WuyeServiceImpl implements WuyeService {
 	public BillListVO queryBillListStd(String userId, String startDate, String endDate, String house_id, String sect_id) {
 		BaseResult<BillListVO> res =WuyeUtil.queryBillList(userId, startDate, endDate,house_id,sect_id);
 		if(!"00".equals(res.getResult())) {
-			throw new BizValidateException(res.getData().toString());
+			throw new BizValidateException("没有可记账的账单");
 		}
 		return WuyeUtil.queryBillList(userId, startDate, endDate,house_id,sect_id).getData();
 	}
