@@ -25,6 +25,7 @@ import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
+import com.yumu.hexie.integration.wuye.resp.BillStartDate;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.CellVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
@@ -280,7 +281,7 @@ public class WuyeController extends BaseController {
 			return BaseResult.successResult(null);
 		}
 	}
-
+	
 	/***************** [END]账单查询 ********************/
 
 	/***************** [BEGIN]缴费 ********************/
@@ -751,5 +752,47 @@ public class WuyeController extends BaseController {
 		log.info(" hexieHouse: " + hexieHouse);
 		return BaseResult.successResult(hexieHouse);
 	}
+	
+	// stmtId在快捷支付的时候会用到
+	@RequestMapping(value = "/getOtherPrePayInfo", method = RequestMethod.POST)
+	@ResponseBody
+	public BaseResult<WechatPayInfo> getOtherPrePayInfo(@ModelAttribute(Constants.USER) User user,
+			@RequestParam(required = false) String houseId, @RequestParam(required = false) String start_date, @RequestParam(required = false) String end_date,
+			@RequestParam(required = false) String couponUnit, @RequestParam(required = false) String couponNum,
+			@RequestParam(required = false) String couponId, @RequestParam(required = false) String mianBill,
+			@RequestParam(required = false) String mianAmt, @RequestParam(required = false) String reduceAmt) throws Exception {
+		WechatPayInfo result;
+		try {
+			result = wuyeService.getOtherPrePayInfo(user, houseId, start_date,end_date, couponUnit,
+					couponNum, couponId, mianBill, mianAmt, reduceAmt);
+		} catch (Exception e) {
 
+			e.printStackTrace();
+			return BaseResult.fail(e.getMessage());
+		}
+		return BaseResult.successResult(result);
+	}
+	
+	/***************** [BEGIN]无账单查询 ********************/
+	@RequestMapping(value = "/getPayListStd", method = RequestMethod.GET)
+	@ResponseBody
+	public BaseResult<BillListVO> getPayListStd(@ModelAttribute(Constants.USER) User user, @RequestParam(required = false) String start_date,
+			@RequestParam(required = false) String end_date,  @RequestParam(required = false) String house_id, 
+			@RequestParam(required = false) String sect_id)
+			throws Exception {
+		BillListVO listVo = wuyeService.queryBillListStd(user.getWuyeId(), start_date, end_date,house_id,sect_id);
+		if (listVo != null && !listVo.getOther_bill_info().isEmpty()) {
+			return BaseResult.successResult(listVo);
+		} else {
+			return BaseResult.fail("请求值获取为空");
+		}
+	}
+	
+	//查询无账单缴费房子开始日期
+	@RequestMapping(value = "/getBillStartDateSDO", method = RequestMethod.GET)
+	@ResponseBody
+	public BaseResult<BillStartDate> getBillStartDateSDO(@ModelAttribute(Constants.USER) User user,@RequestParam String house_id) throws Exception {
+
+		return BaseResult.successResult(wuyeService.getBillStartDateSDO(user.getWuyeId(),house_id));
+	}
 }
