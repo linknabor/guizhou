@@ -735,6 +735,10 @@ public class WuyeServiceImpl implements WuyeService {
 
 	@Override
 	public BillListVO queryBillListStd(String userId, String startDate, String endDate, String house_id, String sect_id) {
+		BaseResult<BillListVO> res =WuyeUtil.queryBillList(userId, startDate, endDate,house_id,sect_id);
+		if(!"00".equals(res.getResult())) {
+			throw new BizValidateException(res.getData().toString());
+		}
 		return WuyeUtil.queryBillList(userId, startDate, endDate,house_id,sect_id).getData();
 	}
 
